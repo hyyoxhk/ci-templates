@@ -1,0 +1,60 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+# We can not do multi-level includes, so we need to manually include all of
+# our templates here
+include:
+  # projects using these templates should not need to pull the bootstrap
+  - local: '/bootstrap/bootstrap.yml'
+
+  # Debian container builder template
+  - project: 'bentiss/ci-templates'
+    ref: master
+    file: '/templates/debian.yml'
+
+
+variables:
+  DEBIAN_VERSION: 'stretch'
+  DEBIAN_DEBS: 'curl'
+  DEBIAN_SCRIPT: 'test/debian.sh'
+
+
+stages:
+  - bootstrapping_check
+  - bootstrapping
+  - container_build
+  - check
+  - container_push
+
+
+debian:stretch@container-build:
+  extends: .debian@container-build
+  # we want to test the creation of the container with the new bootstrap image
+  image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  stage: container_build
+  variables:
+    DEBIAN_VERSION: stretch
+
+
+debian:stretch@check:
+  stage: check
+  image: $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+  script:
+      # make sure curl has been installed
+    - curl --insecure https://gitlab.freedesktop.org
+      # make sure our test script has been run
+    - if [[ -e test_file ]] ;
+      then
+        $DEBIAN_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+bootstrap-push@push:
+  stage: container_push
+  image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  script:
+    # push the container image to the registry
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID docker://$CI_REGISTRY_IMAGE/buildah:latest
+  variables:
+    GIT_STRATEGY: none

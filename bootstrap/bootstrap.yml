@@ -1,0 +1,40 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+#################################################################
+#                                                               #
+#                    bootstrapping stage                        #
+#                                                               #
+#################################################################
+
+# if the bootstrap image is not present, copy it from the original
+# repo, this allows to always have a working bootstrap image even in
+# forks, and allow forks to rebuild their bootstrap images to change
+# something in it
+bootstrap@check:
+  # FIXME: for first push on this repo, use the libinput image
+  # image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
+  image: $CI_REGISTRY/libinput/libinput/containers:latest
+  stage: bootstrapping_check
+  script:
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  # check if there is a bootsrap image in the current registry
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:latest > /dev/null && exit 0 || true
+
+  # copy the original image into the current project registry namespace
+  # - skopeo copy docker://$CI_REGISTRY/bentiss/ci-templates/buildah:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
+  - skopeo copy docker://$CI_REGISTRY/libinput/libinput/containers:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
+
+
+# we need a minimalist image capable of buildah, podman, skopeo, curl,
+# jq, date and test. Instead of using a full fedora and install the
+# dependencies, we can build an alpine container through buildah with
+# the script at `ci/bootstrap.sh`
+bootstrap:
+  image: $CI_REGISTRY_IMAGE/buildah:latest
+  stage: bootstrapping
+  script:
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - bash bootstrap/bootstrap.sh $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  - podman images
+  - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID

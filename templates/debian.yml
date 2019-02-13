@@ -1,0 +1,49 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+#################################################################
+#                                                               #
+#                  container build stage                        #
+#                                                               #
+#################################################################
+
+# This will create a debian image based on the following variables:
+#
+#  - DEBIAN_VERSION: the debian version (stretch, sid, etc...)
+#  - DEBIAN_DEBS:    list of packages that needs to be installed
+#  - DEBIAN_SCRIPT:  if set, this path should point to a bash script that will
+#                    be run once the packages have been installed
+#
+# The resulting image will be pushed in the local registry, under:
+#    $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+
+.debian@container-build:
+  image: $CI_REGISTRY_IMAGE/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from --quiet debian:$DEBIAN_VERSION)
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS
+
+    # check if there is an optional post install script and run it
+  - if [[ (x"$DEBIAN_SCRIPT" != x"") && -e $DEBIAN_SCRIPT ]] ;
+    then
+      echo Running $DEBIAN_SCRIPT ;
+      buildah run $buildcntr bash $DEBIAN_SCRIPT ;
+    fi
+
+    # do not store the apt database, it s pointless
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get clean
+
+    # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+    # tag the current container
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+  - podman push --quiet $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
