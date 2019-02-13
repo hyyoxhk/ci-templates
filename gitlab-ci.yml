@@ -13,7 +13,6 @@ include:
 
 
 variables:
-  DEBIAN_VERSION: 'stretch'
   DEBIAN_DEBS: 'curl'
   DEBIAN_SCRIPT: 'test/debian.sh'
 
