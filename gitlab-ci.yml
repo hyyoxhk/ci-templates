@@ -28,6 +28,7 @@ stages:
 
 .debian:ci@container-build:
   extends: .debian@container-build
+  # FIXME: temporary workaround to speed up development
   # we want to test the creation of the container with the new bootstrap image
   # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
   image: $CI_REGISTRY_IMAGE/buildah:latest
@@ -78,3 +79,5 @@ bootstrap-push@push:
     - skopeo copy docker://$CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID docker://$CI_REGISTRY_IMAGE/buildah:latest
   variables:
     GIT_STRATEGY: none
+  # FIXME: temporary workaround to speed up development
+  when: manual
