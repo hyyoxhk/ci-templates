@@ -11,9 +11,7 @@
 # forks, and allow forks to rebuild their bootstrap images to change
 # something in it
 bootstrap@check:
-  # FIXME: for first push on this repo, use the libinput image
-  # image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
-  image: $CI_REGISTRY/libinput/libinput/containers:latest
+  image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
   stage: bootstrapping_check
   script:
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -22,8 +20,7 @@ bootstrap@check:
   - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:latest > /dev/null && exit 0 || true
 
   # copy the original image into the current project registry namespace
-  # - skopeo copy docker://$CI_REGISTRY/bentiss/ci-templates/buildah:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
-  - skopeo copy docker://$CI_REGISTRY/libinput/libinput/containers:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
+  - skopeo copy docker://$CI_REGISTRY/bentiss/ci-templates/buildah:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
 
 
 # we need a minimalist image capable of buildah, podman, skopeo, curl,
