@@ -43,7 +43,7 @@ debian:stretch@check:
       # make sure curl has been installed
     - curl --insecure https://gitlab.freedesktop.org
       # make sure our test script has been run
-    - if [[ -e test_file ]] ;
+    - if [[ -e /test_file ]] ;
       then
         $DEBIAN_SCRIPT properly run ;
       else
