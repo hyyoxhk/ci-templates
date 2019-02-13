@@ -15,6 +15,9 @@
 #
 # The resulting image will be pushed in the local registry, under:
 #    $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+#
+# It is then up to the caller to promote the image as latest or any tag
+# that would be convenient
 
 .debian@container-build:
   image: $CI_REGISTRY_IMAGE/buildah:latest
@@ -25,6 +28,7 @@
   script:
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from --quiet debian:$DEBIAN_VERSION)
+  - buildmnt=$(buildah mount $buildcntr)
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS
 
@@ -32,7 +36,9 @@
   - if [[ (x"$DEBIAN_SCRIPT" != x"") && -e $DEBIAN_SCRIPT ]] ;
     then
       echo Running $DEBIAN_SCRIPT ;
-      buildah run $buildcntr bash $DEBIAN_SCRIPT ;
+      cp $DEBIAN_SCRIPT $buildmnt/script.sh ;
+      buildah run $buildcntr bash /script.sh ;
+      rm $buildmnt/script.sh ;
     fi
 
     # do not store the apt database, it s pointless
@@ -40,6 +46,8 @@
 
     # set up the working directory
   - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
     # tag the current container
   - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
     # clean up the working container
