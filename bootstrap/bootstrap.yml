@@ -26,7 +26,7 @@ bootstrap@check:
 # we need a minimalist image capable of buildah, podman, skopeo, curl,
 # jq, date and test. Instead of using a full fedora and install the
 # dependencies, we can build an alpine container through buildah with
-# the script at `ci/bootstrap.sh`
+# the script at `bootstrap/bootstrap.sh`
 bootstrap:
   image: $CI_REGISTRY_IMAGE/buildah:latest
   stage: bootstrapping

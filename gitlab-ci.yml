@@ -43,10 +43,35 @@ stages:
   stage: container_build
 
 
+.debian:ci@container-ifnot-exists:
+  extends: .debian@container-ifnot-exists
+  # FIXME: temporary workaround to speed up development
+  # we want to test the creation of the container with the new bootstrap image
+  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/buildah:latest
+  stage: container_build
+
+
 debian:stretch@container-build:
   extends: .debian:ci@container-build
   variables:
     DEBIAN_VERSION: stretch
+
+
+debian:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: immutable_tag
+
+
+debian-forced:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: $CI_PIPELINE_IID
 
 
 debian:buster@container-build:
@@ -77,6 +102,16 @@ debian:stretch@check:
 debian:buster@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID
+
+
+debian:ifnot-exists@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:immutable_tag
+
+
+debian:forced-ifnot-exists@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
 
 
 .fedora:ci@container-build:
