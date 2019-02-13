@@ -14,7 +14,7 @@
 #                    be run once the packages have been installed
 #
 # The resulting image will be pushed in the local registry, under:
-#    $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+#    $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
 #
 # It is then up to the caller to promote the image as latest or any tag
 # that would be convenient
@@ -49,9 +49,9 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
     # clean up the working container
   - buildah rm $buildcntr
 
     # push the container image to the registry
-  - podman push --quiet $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
+  - podman push --quiet $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID

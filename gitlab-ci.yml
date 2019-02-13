@@ -26,19 +26,28 @@ stages:
   - container_push
 
 
-debian:stretch@container-build:
+.debian:ci@container-build:
   extends: .debian@container-build
   # we want to test the creation of the container with the new bootstrap image
   # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
   image: $CI_REGISTRY_IMAGE/buildah:latest
   stage: container_build
+
+
+debian:stretch@container-build:
+  extends: .debian:ci@container-build
   variables:
     DEBIAN_VERSION: stretch
 
 
-debian:stretch@check:
+debian:buster@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_VERSION: buster
+
+
+.debian@check:
   stage: check
-  image: $CI_REGISTRY_IMAGE/debian:$CI_PIPELINE_ID
   script:
       # make sure curl has been installed
     - curl --insecure https://gitlab.freedesktop.org
@@ -49,6 +58,16 @@ debian:stretch@check:
       else
         exit 1 ;
       fi
+
+
+debian:stretch@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+
+
+debian:buster@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID
 
 
 bootstrap-push@push:
