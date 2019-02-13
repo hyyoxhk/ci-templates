@@ -7,9 +7,13 @@ include:
   - local: '/bootstrap/bootstrap.yml'
 
   # Debian container builder template
-  - project: 'bentiss/ci-templates'
-    ref: master
-    file: '/templates/debian.yml'
+  # projects using this should reference this with the following:
+  #
+  # - project: 'bentiss/ci-templates'
+  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
+  #   file: '/templates/debian.yml'
+  #
+  - local: '/templates/debian.yml'
 
 
 variables:
