@@ -20,7 +20,7 @@
 # that would be convenient
 
 .debian@container-build:
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
   stage: build
   before_script:
     # log in to the registry
