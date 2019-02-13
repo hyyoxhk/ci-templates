@@ -29,7 +29,8 @@ stages:
 debian:stretch@container-build:
   extends: .debian@container-build
   # we want to test the creation of the container with the new bootstrap image
-  image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/buildah:latest
   stage: container_build
   variables:
     DEBIAN_VERSION: stretch

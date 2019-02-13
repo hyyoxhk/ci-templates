@@ -35,3 +35,4 @@ bootstrap:
   - bash bootstrap/bootstrap.sh $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
   - podman images
   - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  when: manual
