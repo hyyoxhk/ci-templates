@@ -1,0 +1,57 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+#################################################################
+#                                                               #
+#                  container build stage                        #
+#                                                               #
+#################################################################
+
+# This will create a fedora image based on the following variables:
+#
+#  - FEDORA_VERSION: the fedora version (28, 29, rawhide, etc...)
+#  - FEDORA_RPMS:    list of packages that needs to be installed
+#  - FEDORA_SCRIPT:  if set, this path should point to a bash script that will
+#                    be run once the packages have been installed
+#
+# The resulting image will be pushed in the local registry, under:
+#    $CI_REGISTRY_IMAGE/fedora/$FEDORA_VERSION:$CI_PIPELINE_ID
+#
+# It is then up to the caller to promote the image as latest or any tag
+# that would be convenient
+
+.fedora@container-build:
+  image: $CI_REGISTRY_IMAGE/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from --quiet fedora:$FEDORA_VERSION)
+  - buildmnt=$(buildah mount $buildcntr)
+  - buildah run $buildcntr dnf upgrade -y
+  - buildah run $buildcntr dnf install -y $FEDORA_RPMS
+
+    # check if there is an optional post install script and run it
+  - if [[ (x"$FEDORA_SCRIPT" != x"") && -e $FEDORA_SCRIPT ]] ;
+    then
+      echo Running $FEDORA_SCRIPT ;
+      cp $FEDORA_SCRIPT $buildmnt/script.sh ;
+      buildah run $buildcntr bash /script.sh ;
+      rm $buildmnt/script.sh ;
+    fi
+
+    # do not store the dnf database, it s pointless
+  - buildah run $buildcntr dnf clean all
+
+    # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/fedora/$FEDORA_VERSION:$CI_PIPELINE_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+  - podman push --quiet $CI_REGISTRY_IMAGE/fedora/$FEDORA_VERSION:$CI_PIPELINE_ID
