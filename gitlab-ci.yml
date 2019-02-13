@@ -54,7 +54,7 @@ debian:buster@container-build:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        $DEBIAN_SCRIPT properly run ;
+        echo $DEBIAN_SCRIPT properly run ;
       else
         exit 1 ;
       fi
