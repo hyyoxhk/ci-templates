@@ -27,12 +27,17 @@ bootstrap@check:
 # jq, date and test. Instead of using a full fedora and install the
 # dependencies, we can build an alpine container through buildah with
 # the script at `bootstrap/bootstrap.sh`
-bootstrap:
+#
+# To avoid rebuilding this image at every run, and to give better control,
+# BOOTSTRAP_TAG needs to be set by the caller.
+.bootstrap:
   image: $CI_REGISTRY_IMAGE/buildah:latest
   stage: bootstrapping
-  script:
+  before_script:
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - bash bootstrap/bootstrap.sh $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+    # check if our image is already in the current registry
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
+  script:
+  - bash bootstrap/bootstrap.sh $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   - podman images
-  - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
-  when: manual
+  - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG

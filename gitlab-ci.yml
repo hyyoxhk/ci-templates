@@ -20,6 +20,7 @@ include:
 
 
 variables:
+  BOOTSTRAP_TAG: '2019-02-18'
   DEBIAN_DEBS: 'curl'
   DEBIAN_SCRIPT: 'test/debian.sh'
   FEDORA_RPMS: 'wget'
@@ -34,21 +35,19 @@ stages:
   - container_push
 
 
+bootstrap:
+  extends: .bootstrap
+
+
 .debian:ci@container-build:
   extends: .debian@container-build
-  # FIXME: temporary workaround to speed up development
-  # we want to test the creation of the container with the new bootstrap image
-  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: container_build
 
 
 .debian:ci@container-ifnot-exists:
   extends: .debian@container-ifnot-exists
-  # FIXME: temporary workaround to speed up development
-  # we want to test the creation of the container with the new bootstrap image
-  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: container_build
 
 
@@ -133,19 +132,13 @@ debian:forced-ifnot-exists@check:
 
 .fedora:ci@container-build:
   extends: .fedora@container-build
-  # FIXME: temporary workaround to speed up development
-  # we want to test the creation of the container with the new bootstrap image
-  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: container_build
 
 
 .fedora:ci@container-ifnot-exists:
   extends: .fedora@container-ifnot-exists
-  # FIXME: temporary workaround to speed up development
-  # we want to test the creation of the container with the new bootstrap image
-  # image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: container_build
 
 
@@ -203,11 +196,9 @@ fedora:rawhide@check:
 
 bootstrap-push@push:
   stage: container_push
-  image: $CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   script:
     # push the container image to the registry
-    - skopeo copy docker://$CI_REGISTRY_IMAGE/buildah:$CI_PIPELINE_ID docker://$CI_REGISTRY_IMAGE/buildah:latest
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG docker://$CI_REGISTRY_IMAGE/buildah:latest
   variables:
     GIT_STRATEGY: none
-  # FIXME: temporary workaround to speed up development
-  when: manual
