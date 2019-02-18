@@ -12,6 +12,9 @@
 #  - DEBIAN_DEBS:    list of packages that needs to be installed
 #  - DEBIAN_SCRIPT:  if set, this path should point to a bash script that will
 #                    be run once the packages have been installed
+#  - DEBIAN_USE_BACKPORTS: (true | false), defaults to false. If set, make use
+#                          of the backports for stable. This will reuse
+#                          DEBIAN_VERSION for enabling the backports repo.
 #
 # The resulting image will be pushed in the local registry, under:
 #     $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
@@ -29,6 +32,14 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from --quiet debian:$DEBIAN_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
+  - if [[ x"$DEBIAN_USE_BACKPORTS" == x"true" ]] ;
+    then
+      echo Enabling $DEBIAN_VERSION-backports ;
+      echo "deb http://deb.debian.org/debian $DEBIAN_VERSION-backports main" >>
+            $buildmnt/etc/apt/sources.list ;
+    fi
+  - buildah run $buildcntr cat /etc/apt/sources.list
+
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS
 
@@ -68,6 +79,9 @@
 #  - DEBIAN_DEBS:    list of packages that needs to be installed
 #  - DEBIAN_SCRIPT:  if set, this path should point to a bash script that will
 #                    be run once the packages have been installed
+#  - DEBIAN_USE_BACKPORTS: (true | false), defaults to false. If set, make use
+#                          of the backports for stable. This will reuse
+#                          DEBIAN_VERSION for enabling the backports repo.
 #  - DEBIAN_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #

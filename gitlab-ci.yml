@@ -58,6 +58,14 @@ debian:stretch@container-build:
     DEBIAN_VERSION: stretch
 
 
+debian:stretch-backports@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_VERSION: stretch
+    DEBIAN_USE_BACKPORTS: 'true'
+    DEBIAN_DEBS: 'gnupg'
+
+
 debian:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
@@ -97,6 +105,15 @@ debian:buster@container-build:
 debian:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+
+
+debian:stretch-backports@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+  script:
+      # make sure gnupg 2.2 has been installed
+    - |
+     [[ x"$(gpg --version | head -n 1 | awk '{ print $3; }')" > x"2.2" ]] && echo gnupg 2.2.x has been installed
 
 
 debian:buster@check:
