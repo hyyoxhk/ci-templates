@@ -1,12 +1,6 @@
 # vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
 
-#################################################################
-#                                                               #
-#                  container build stage                        #
-#                                                               #
-#################################################################
-
-# This will create a debian image based on the following variables:
+# This template will create a debian image based on the following variables:
 #
 #  - DEBIAN_VERSION: the debian version (stretch, sid, etc...)
 #  - DEBIAN_DEBS:    list of packages that needs to be installed
@@ -15,14 +9,25 @@
 #  - DEBIAN_USE_BACKPORTS: (true | false), defaults to false. If set, make use
 #                          of the backports for stable. This will reuse
 #                          DEBIAN_VERSION for enabling the backports repo.
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
+#  - DEBIAN_TAG:     tag to copy the image from the upstream registry. If the
+#                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
+#     $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
 #
-# It is then up to the caller to promote the image as latest or any tag
-# that would be convenient
+# Two flavors of templates are available:
+#   - `.debian@container-build`: this will force rebuild a new container
+#     and tag it with $DEBIAN_TAG without checks
+#   - `.debian@container-ifnot-exists`: this will rebuild a new container
+#     only if $DEBIAN_TAG is not available in the local registry or
+#     in the $UPSTREAM_REPO registry
 
-.debian@container-build:
+
+# Do not use this template directly, you can not reuse the produced image
+# as it is tagged with $CI_JOB_ID
+..debian@container-template:
   image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
   stage: build
   before_script:
@@ -60,35 +65,34 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
     # clean up the working container
   - buildah rm $buildcntr
 
     # push the container image to the registry
-  - podman push --quiet $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
+  - podman push --quiet $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
 
     # mark the current stage as successed, to get the result in after_script
   - touch .success
 
 
-# This will create or reuse a debian image based on the following variables:
-#
-#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
-#                    find the given tag (for example: 'wayland/weston')
-#  - DEBIAN_VERSION: the debian version (stretch, sid, etc...)
-#  - DEBIAN_DEBS:    list of packages that needs to be installed
-#  - DEBIAN_SCRIPT:  if set, this path should point to a bash script that will
-#                    be run once the packages have been installed
-#  - DEBIAN_USE_BACKPORTS: (true | false), defaults to false. If set, make use
-#                          of the backports for stable. This will reuse
-#                          DEBIAN_VERSION for enabling the backports repo.
-#  - DEBIAN_TAG:     tag to copy the image from the upstream registry. If the
-#                    tag does not exist, create a new build and tag it
-#
-# The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
-# and $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
-#
+.debian@container-build:
+  extends: ..debian@container-template
+  before_script:
+  # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  after_script:
+  # if we did not build, or if there was a failure, exit
+  # (the exit status does not matter here)
+  - if [[ ! -e .success ]] ;
+    then
+      exit 0;
+    fi
+
+  - skopeo copy docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
+                docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
+
 
 .debian@container-ifnot-exists:
   extends: .debian@container-build
@@ -102,13 +106,3 @@
   # copy the original image into the current project registry namespace
   - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/debian/$DEBIAN_VERSION:$DEBIAN_TAG
                 docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG && exit 0 || true
-  after_script:
-  # if we did not build, or if there was a failure, exit
-  # (the exit status does not matter here)
-  - if [[ ! -e .success ]] ;
-    then
-      exit 0;
-    fi
-
-  - skopeo copy docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_PIPELINE_ID
-                docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG

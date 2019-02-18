@@ -54,12 +54,14 @@ bootstrap:
 debian:stretch@container-build:
   extends: .debian:ci@container-build
   variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
     DEBIAN_VERSION: stretch
 
 
 debian:stretch-backports@container-build:
   extends: .debian:ci@container-build
   variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID-backports
     DEBIAN_VERSION: stretch
     DEBIAN_USE_BACKPORTS: 'true'
     DEBIAN_DEBS: 'gnupg'
@@ -84,6 +86,7 @@ debian-forced:stretch@container-ifnot-exists:
 debian:buster@container-build:
   extends: .debian:ci@container-build
   variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
     DEBIAN_VERSION: buster
 
 
@@ -108,7 +111,7 @@ debian:stretch@check:
 
 debian:stretch-backports@check:
   extends: .debian@check
-  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID-backports
   script:
       # make sure gnupg 2.2 has been installed
     - |
