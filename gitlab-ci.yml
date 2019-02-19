@@ -142,6 +142,21 @@ debian:stretch@container-ifnot-exists:
 
 
 #
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+.debian:stretch-upstream@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  stage: debian_check
+  variables:
+    UPSTREAM_REPO: FIXME
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: latest
+    DEBIAN_DEBS: 'this-package-should-not-exists'
+
+
+#
 # Try our debian scripts with an other version and check
 #
 debian:buster@container-build:
@@ -245,6 +260,20 @@ fedora:rawhide@container-ifnot-exists:
     UPSTREAM_REPO: bentiss/ci-templates
     FEDORA_VERSION: rawhide
     FEDORA_TAG: $CI_PIPELINE_IID
+    FEDORA_RPMS: 'this-package-should-not-exists'
+
+
+#
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+fedora:29-upstream@container-ifnot-exists:
+  extends: .fedora:ci@container-ifnot-exists
+  stage: fedora_check
+  variables:
+    UPSTREAM_REPO: libinput/libinput
+    FEDORA_VERSION: 29
+    FEDORA_TAG: latest
     FEDORA_RPMS: 'this-package-should-not-exists'
 
 
