@@ -114,18 +114,6 @@ debian:stretch-backports@check:
 
 
 #
-# make sure we do not rebuild the image if the tag exists (no need to check)
-#
-debian:stretch@container-ifnot-exists:
-  extends: .debian:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    DEBIAN_VERSION: stretch
-    DEBIAN_TAG: immutable_tag
-    DEBIAN_DEBS: 'this-package-should-not-exists'
-
-
-#
 # make sure we do rebuild the image if the tag does not exist and check
 #
 debian-forced:stretch@container-ifnot-exists:
@@ -138,6 +126,19 @@ debian-forced:stretch@container-ifnot-exists:
 debian:forced-ifnot-exists@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+debian:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  stage: debian_check
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: $CI_PIPELINE_IID
+    DEBIAN_DEBS: 'this-package-should-not-exists'
 
 
 #
@@ -219,18 +220,6 @@ fedora:rawhide@check:
 
 
 #
-# make sure we do not rebuild the image if the tag exists (no need to check)
-#
-fedora:rawhide@container-ifnot-exists:
-  extends: .fedora:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    FEDORA_VERSION: rawhide
-    FEDORA_TAG: immutable_tag
-    FEDORA_RPMS: 'this-package-should-not-exists'
-
-
-#
 # make sure we do rebuild the image if the tag does not exist and check
 #
 fedora-forced:rawhide@container-ifnot-exists:
@@ -244,6 +233,19 @@ fedora-forced:rawhide@container-ifnot-exists:
 fedora-forced-ifnot-exists:rawhide@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+fedora:rawhide@container-ifnot-exists:
+  extends: .fedora:ci@container-ifnot-exists
+  stage: fedora_check
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    FEDORA_VERSION: rawhide
+    FEDORA_TAG: $CI_PIPELINE_IID
+    FEDORA_RPMS: 'this-package-should-not-exists'
 
 
 ################################################################################
