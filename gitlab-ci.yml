@@ -216,6 +216,7 @@ fedora:29@container-build:
   extends: .fedora:ci@container-build
   variables:
     FEDORA_VERSION: 29
+    FEDORA_TAG: $CI_PIPELINE_ID
 
 
 fedora:29@check:
@@ -227,6 +228,7 @@ fedora:rawhide@container-build:
   extends: .fedora:ci@container-build
   variables:
     FEDORA_VERSION: rawhide
+    FEDORA_TAG: $CI_PIPELINE_ID
 
 
 fedora:rawhide@check:
