@@ -30,8 +30,10 @@ variables:
 stages:
   - bootstrapping_check
   - bootstrapping
-  - container_build
-  - check
+  - debian_container_build
+  - debian_check
+  - fedora_container_build
+  - fedora_check
   - container_push
 
 
@@ -39,59 +41,33 @@ bootstrap:
   extends: .bootstrap
 
 
+################################################################################
+#
+# Debian checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
 .debian:ci@container-build:
   extends: .debian@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
-  stage: container_build
+  stage: debian_container_build
 
 
 .debian:ci@container-ifnot-exists:
   extends: .debian@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
-  stage: container_build
+  stage: debian_container_build
 
 
-debian:stretch@container-build:
-  extends: .debian:ci@container-build
-  variables:
-    DEBIAN_TAG: $CI_PIPELINE_ID
-    DEBIAN_VERSION: stretch
-
-
-debian:stretch-backports@container-build:
-  extends: .debian:ci@container-build
-  variables:
-    DEBIAN_TAG: $CI_PIPELINE_ID-backports
-    DEBIAN_VERSION: stretch
-    DEBIAN_USE_BACKPORTS: 'true'
-    DEBIAN_DEBS: 'gnupg'
-
-
-debian:stretch@container-ifnot-exists:
-  extends: .debian:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    DEBIAN_VERSION: stretch
-    DEBIAN_TAG: immutable_tag
-
-
-debian-forced:stretch@container-ifnot-exists:
-  extends: .debian:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    DEBIAN_VERSION: stretch
-    DEBIAN_TAG: $CI_PIPELINE_IID
-
-
-debian:buster@container-build:
-  extends: .debian:ci@container-build
-  variables:
-    DEBIAN_TAG: $CI_PIPELINE_ID
-    DEBIAN_VERSION: buster
-
-
+#
+# generic debian checks
+#
 .debian@check:
-  stage: check
+  stage: debian_check
   script:
       # make sure curl has been installed
     - curl --insecure https://gitlab.freedesktop.org
@@ -103,14 +79,33 @@ debian:buster@container-build:
         exit 1 ;
       fi
 
+#
+# straight debian build and test
+#
+debian:stretch@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
+    DEBIAN_VERSION: stretch
 
 debian:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
 
 
+#
+# straight debian build with backports and test
+#
+debian:stretch-backports@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID-backports
+    DEBIAN_VERSION: stretch
+    DEBIAN_USE_BACKPORTS: 'true'
+    DEBIAN_DEBS: 'gnupg'
+
 debian:stretch-backports@check:
-  extends: .debian@check
+  stage: debian_check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID-backports
   script:
       # make sure gnupg 2.2 has been installed
@@ -118,63 +113,74 @@ debian:stretch-backports@check:
      [[ x"$(gpg --version | head -n 1 | awk '{ print $3; }')" > x"2.2" ]] && echo gnupg 2.2.x has been installed
 
 
-debian:buster@check:
-  extends: .debian@check
-  image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID
+#
+# make sure we do not rebuild the image if the tag exists (no need to check)
+#
+debian:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: immutable_tag
+    DEBIAN_DEBS: 'this-package-should-not-exists'
 
 
-debian:ifnot-exists@check:
-  extends: .debian@check
-  image: $CI_REGISTRY_IMAGE/debian/stretch:immutable_tag
-
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+debian-forced:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: $CI_PIPELINE_IID
 
 debian:forced-ifnot-exists@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
 
 
+#
+# Try our debian scripts with an other version and check
+#
+debian:buster@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
+    DEBIAN_VERSION: buster
+
+debian:buster@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID
+
+
+################################################################################
+#
+# Fedora checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
 .fedora:ci@container-build:
   extends: .fedora@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
-  stage: container_build
+  stage: fedora_container_build
 
 
 .fedora:ci@container-ifnot-exists:
   extends: .fedora@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
-  stage: container_build
+  stage: fedora_container_build
 
 
-fedora:29@container-build:
-  extends: .fedora:ci@container-build
-  variables:
-    FEDORA_VERSION: 29
-
-
-fedora:rawhide@container-build:
-  extends: .fedora:ci@container-build
-  variables:
-    FEDORA_VERSION: rawhide
-
-
-fedora:rawhide@container-ifnot-exists:
-  extends: .fedora:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    FEDORA_VERSION: rawhide
-    FEDORA_TAG: immutable_tag
-
-
-fedora-forced:rawhide@container-ifnot-exists:
-  extends: .fedora:ci@container-ifnot-exists
-  variables:
-    UPSTREAM_REPO: bentiss/ci-templates
-    FEDORA_VERSION: rawhide
-    FEDORA_TAG: $CI_PIPELINE_IID
-
-
+#
+# generic fedora checks
+#
 .fedora@check:
-  stage: check
+  stage: fedora_check
   script:
       # make sure wget has been installed
     - wget https://gitlab.freedesktop.org
@@ -187,9 +193,24 @@ fedora-forced:rawhide@container-ifnot-exists:
       fi
 
 
+#
+# straight fedora build and test
+#
+fedora:29@container-build:
+  extends: .fedora:ci@container-build
+  variables:
+    FEDORA_VERSION: 29
+
+
 fedora:29@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
+
+
+fedora:rawhide@container-build:
+  extends: .fedora:ci@container-build
+  variables:
+    FEDORA_VERSION: rawhide
 
 
 fedora:rawhide@check:
@@ -197,6 +218,44 @@ fedora:rawhide@check:
   image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID
 
 
+#
+# make sure we do not rebuild the image if the tag exists (no need to check)
+#
+fedora:rawhide@container-ifnot-exists:
+  extends: .fedora:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    FEDORA_VERSION: rawhide
+    FEDORA_TAG: immutable_tag
+    FEDORA_RPMS: 'this-package-should-not-exists'
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+fedora-forced:rawhide@container-ifnot-exists:
+  extends: .fedora:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: bentiss/ci-templates
+    FEDORA_VERSION: rawhide
+    FEDORA_TAG: $CI_PIPELINE_IID
+
+
+fedora-forced-ifnot-exists:rawhide@check:
+  extends: .fedora@check
+  image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_IID
+
+
+################################################################################
+#
+# Push the new bootstrap image
+#
+################################################################################
+
+#
+# Everything went fine if this is run, we can promote the latest bootstrap
+# tag as latest
+#
 bootstrap-push@push:
   stage: container_push
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
