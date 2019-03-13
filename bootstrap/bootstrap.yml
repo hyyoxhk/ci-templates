@@ -6,23 +6,6 @@
 #                                                               #
 #################################################################
 
-# if the bootstrap image is not present, copy it from the original
-# repo, this allows to always have a working bootstrap image even in
-# forks, and allow forks to rebuild their bootstrap images to change
-# something in it
-bootstrap@check:
-  image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
-  stage: bootstrapping_check
-  script:
-  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-  # check if there is a bootsrap image in the current registry
-  - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:latest > /dev/null && exit 0 || true
-
-  # copy the original image into the current project registry namespace
-  - skopeo copy docker://$CI_REGISTRY/bentiss/ci-templates/buildah:latest docker://$CI_REGISTRY_IMAGE/buildah:latest
-
-
 # we need a minimalist image capable of buildah, podman, skopeo, curl,
 # jq, date and test. We used to rely on `bootstrap/bootstrap.sh`, but
 # a commit in runc prevented it to be compiled against musl. So we just
