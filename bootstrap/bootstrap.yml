@@ -24,20 +24,117 @@ bootstrap@check:
 
 
 # we need a minimalist image capable of buildah, podman, skopeo, curl,
-# jq, date and test. Instead of using a full fedora and install the
-# dependencies, we can build an alpine container through buildah with
-# the script at `bootstrap/bootstrap.sh`
+# jq, date and test. We used to rely on `bootstrap/bootstrap.sh`, but
+# a commit in runc prevented it to be compiled against musl. So we just
+# end up building a regular container image from arch.
 #
 # To avoid rebuilding this image at every run, and to give better control,
 # BOOTSTRAP_TAG needs to be set by the caller.
 .bootstrap:
-  image: $CI_REGISTRY_IMAGE/buildah:latest
+  image: archlinux/base:latest
   stage: bootstrapping
   before_script:
+  # install buildah and podman
+  - pacman -S --refresh
+  - pacman -S --noconfirm buildah podman
+  - |
+    cat > /etc/containers/storage.conf <<EOF
+    [storage]
+    driver = "vfs"
+    runroot = "/var/run/containers/storage"
+    graphroot = "/var/lib/containers/storage"
+    EOF
+
+  # bug in podman?
+  - podman info
+
+  # login to the registry
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    # check if our image is already in the current registry
+
+  # check if our image is already in the current registry
   - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
+
   script:
-  - bash bootstrap/bootstrap.sh $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  - buildcntr=$(buildah from --quiet archlinux/base)
+  - buildah run $buildcntr pacman -S --refresh
+  - buildah run $buildcntr pacman -S --sysupgrade --noconfirm
+  - buildah run $buildcntr pacman -S --noconfirm buildah podman skopeo jq
+  # in case it doesn't exist yet, otherwise pacman clean fails
+  - buildah run $buildcntr mkdir -p /var/cache/pacman/pkg
+  - buildah run $buildcntr pacman -S --clean --noconfirm
+  - buildah config --workingdir /app $buildcntr
+  - export buildmnt=$(buildah mount $buildcntr)
+  - |
+    cat > $buildmnt/etc/containers/registries.conf <<EOF
+    # This is a system-wide configuration file used to
+    # keep track of registries for various container backends.
+    # It adheres to TOML format and does not support recursive
+    # lists of registries.
+
+    # The default location for this configuration file is /etc/containers/registries.conf.
+
+    # The only valid categories are: 'registries.search', 'registries.insecure',
+    # and 'registries.block'.
+
+    [registries.search]
+    registries = ['docker.io', 'registry.fedoraproject.org', 'quay.io', 'registry.centos.org']
+
+    # If you need to access insecure registries, add the registry's fully-qualified name.
+    # An insecure registry is one that does not have a valid SSL certificate or only does HTTP.
+    [registries.insecure]
+    registries = []
+
+
+    # If you need to block pull access from a registry, uncomment the section below
+    # and add the registries fully-qualified name.
+    #
+    # Docker only
+    [registries.block]
+    registries = []
+    EOF
+
+  - |
+    cat > $buildmnt/etc/containers/policy.json <<EOF
+    {
+        "default": [
+            {
+                "type": "insecureAcceptAnything"
+            }
+        ],
+        "transports":
+            {
+                "docker-daemon":
+                    {
+                        "": [{"type":"insecureAcceptAnything"}]
+                    }
+            }
+    }
+    EOF
+
+  - |
+    cat > $buildmnt/etc/containers/storage.conf <<EOF
+    # This file is is the configuration file for all tools
+    # that use the containers/storage library.
+    # See man 5 containers-storage.conf for more information
+    # The "container storage" table contains all of the server options.
+    [storage]
+
+    # Default Storage Driver
+    driver = "vfs"
+
+    # Temporary storage location
+    runroot = "/var/run/containers/storage"
+
+    # Primary Read/Write location of container storage
+    graphroot = "/var/lib/containers/storage"
+    EOF
+
+  - buildah run $buildcntr podman images || true
+
+  # tag the current container
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  # clean up the working container
+  - buildah rm $buildcntr
+   
   - podman images
   - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
