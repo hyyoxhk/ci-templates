@@ -20,7 +20,7 @@ include:
 
 
 variables:
-  BOOTSTRAP_TAG: '2019-03-13'
+  BOOTSTRAP_TAG: '2019-03-13.0'
   DEBIAN_DEBS: 'curl'
   DEBIAN_SCRIPT: 'test/debian.sh'
   FEDORA_RPMS: 'wget'

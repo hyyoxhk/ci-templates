@@ -38,6 +38,9 @@
   - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
 
   script:
+  # https://gitlab.com/gitlab-com/support-forum/issues/4349
+  - export BUILDAH_FORMAT=docker
+
   - buildcntr=$(buildah from --quiet archlinux/base)
   - buildah run $buildcntr pacman -S --refresh
   - buildah run $buildcntr pacman -S --sysupgrade --noconfirm

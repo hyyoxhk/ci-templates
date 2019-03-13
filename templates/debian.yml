@@ -33,6 +33,9 @@
   before_script:
     # log in to the registry
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    # https://gitlab.com/gitlab-com/support-forum/issues/4349
+    - export BUILDAH_FORMAT=docker
   script:
   - echo Building for $DEBIAN_TAG with a $DEBIAN_VERSION base
     # initial set up: take the base image, update it and install the packages
