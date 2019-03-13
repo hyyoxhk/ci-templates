@@ -28,7 +28,7 @@
 # Do not use this template directly, you can not reuse the produced image
 # as it is tagged with $CI_JOB_ID
 ..debian@container-template:
-  image: $CI_REGISTRY/bentiss/ci-templates/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
   stage: build
   before_script:
     # log in to the registry

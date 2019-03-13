@@ -9,7 +9,7 @@ include:
   # Debian container builder template
   # projects using this should reference this with the following:
   #
-  # - project: 'bentiss/ci-templates'
+  # - project: 'wayland/ci-templates'
   #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
   #   file: '/templates/debian.yml'
   #
@@ -119,7 +119,7 @@ debian:stretch-backports@check:
 debian-forced:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: bentiss/ci-templates
+    UPSTREAM_REPO: wayland/ci-templates
     DEBIAN_VERSION: stretch
     DEBIAN_TAG: $CI_PIPELINE_IID
 
@@ -135,7 +135,7 @@ debian:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   stage: debian_check
   variables:
-    UPSTREAM_REPO: bentiss/ci-templates
+    UPSTREAM_REPO: wayland/ci-templates
     DEBIAN_VERSION: stretch
     DEBIAN_TAG: $CI_PIPELINE_IID
     DEBIAN_DEBS: 'this-package-should-not-exists'
@@ -242,7 +242,7 @@ fedora:rawhide@check:
 fedora-forced:rawhide@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: bentiss/ci-templates
+    UPSTREAM_REPO: wayland/ci-templates
     FEDORA_VERSION: rawhide
     FEDORA_TAG: $CI_PIPELINE_IID
 
@@ -259,7 +259,7 @@ fedora:rawhide@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
-    UPSTREAM_REPO: bentiss/ci-templates
+    UPSTREAM_REPO: wayland/ci-templates
     FEDORA_VERSION: rawhide
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exists'
