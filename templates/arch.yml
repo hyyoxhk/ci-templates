@@ -45,7 +45,7 @@
 
   script:
   - *distro_vars
-  - echo Building Arch Linux
+  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from archlinux/base
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from archlinux/base)
   - buildmnt=$(buildah mount $buildcntr)

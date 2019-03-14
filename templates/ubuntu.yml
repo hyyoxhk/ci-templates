@@ -46,7 +46,7 @@
 
   script:
   - *distro_vars
-  - echo Building for $DISTRO_TAG with a $DISTRO_VERSION base
+  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
