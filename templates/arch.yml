@@ -1,0 +1,115 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+# This template will create a arch image based on the following variables:
+#
+#  - ARCH_PKGS:    list of packages that needs to be installed
+#  - ARCH_SCRIPT:  if set, this path should point to a bash script that will
+#                  be run once the packages have been installed
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
+#  - ARCH_TAG:     tag to copy the image from the upstream registry. If the
+#                  tag does not exist, create a new build and tag it
+#
+# The resulting image will be pushed in the local registry, under:
+#     $CI_REGISTRY_IMAGE/archlinux/rolling:$ARCH_TAG
+#
+# Two flavors of templates are available:
+#   - `.arch@container-build`: this will force rebuild a new container
+#     and tag it with $ARCH_TAG without checks
+#   - `.arch@container-ifnot-exists`: this will rebuild a new container
+#     only if $ARCH is not available in the local registry or
+#     in the $UPSTREAM_REPO registry
+
+# we can not reuse exported variables in after_script,
+# so have a common definition
+.arch_vars: &distro_vars |
+        # exporting templates variables
+        # https://gitlab.com/gitlab-com/support-forum/issues/4349
+        export BUILDAH_FORMAT=docker
+        export DISTRO=archlinux
+        export DISTRO_TAG=$ARCH_TAG
+        export DISTRO_VERSION=rolling
+        export DISTRO_SCRIPT=$ARCH_SCRIPT
+
+
+# Do not use this template directly, you can not reuse the produced image
+# as it is tagged with $CI_JOB_ID
+..arch@container-template:
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+  script:
+  - *distro_vars
+  - echo Building Arch Linux
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from archlinux/base)
+  - buildmnt=$(buildah mount $buildcntr)
+  - buildah run $buildcntr pacman -S --refresh
+  - buildah run $buildcntr pacman -S --sysupgrade --noconfirm
+  - buildah run $buildcntr pacman -S --noconfirm $ARCH_PKGS
+
+    # check if there is an optional post install script and run it
+  - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;
+    then
+      echo Running $DISTRO_SCRIPT ;
+      cp $DISTRO_SCRIPT $buildmnt/script.sh ;
+      buildah run $buildcntr bash /script.sh ;
+      rm $buildmnt/script.sh ;
+    fi
+
+    # in case it doesn't exist yet, otherwise pacman clean fails
+  - buildah run $buildcntr mkdir -p /var/cache/pacman/pkg
+    # do not store the packages database, it's pointless
+  - buildah run $buildcntr pacman -S --clean --noconfirm
+
+    # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - buildah commit $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+
+    # mark the current stage as successed, to get the result in after_script
+  - touch .success
+
+
+.arch@container-build:
+  extends: ..arch@container-template
+  after_script:
+  # if we did not build, or if there was a failure, exit
+  # (the exit status does not matter here)
+  - if [[ ! -e .success ]] ;
+    then
+      exit 0;
+    fi
+
+  - *distro_vars
+
+  - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+
+
+.arch@container-ifnot-exists:
+  extends: .arch@container-build
+  before_script:
+  # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  - *distro_vars
+
+  # check if our image is already in the current registry
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+
+  # copy the original image into the current project registry namespace
+  - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
