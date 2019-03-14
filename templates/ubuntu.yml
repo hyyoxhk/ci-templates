@@ -1,0 +1,125 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+# This template will create a ubuntu image based on the following variables:
+#
+#  - UBUNTU_VERSION: the ubuntu version (18.04, 16.04, etc...)
+#  - UBUNTU_DEBS:    list of packages that needs to be installed
+#  - UBUNTU_SCRIPT:  if set, this path should point to a bash script that will
+#                    be run once the packages have been installed
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
+#  - UBUNTU_TAG:     tag to copy the image from the upstream registry. If the
+#                    tag does not exist, create a new build and tag it
+#
+# The resulting image will be pushed in the local registry, under:
+#     $CI_REGISTRY_IMAGE/ubuntu/$UBUNTU_VERSION:$UBUNTU_TAG
+#
+# Two flavors of templates are available:
+#   - `.ubuntu@container-build`: this will force rebuild a new container
+#     and tag it with $UBUNTU_TAG without checks
+#   - `.ubuntu@container-ifnot-exists`: this will rebuild a new container
+#     only if $UBUNTU_TAG is not available in the local registry or
+#     in the $UPSTREAM_REPO registry
+
+# we can not reuse exported variables in after_script,
+# so have a common definition
+.ubuntu_vars: &distro_vars |
+        # exporting templates variables
+        # https://gitlab.com/gitlab-com/support-forum/issues/4349
+        export BUILDAH_FORMAT=docker
+        export DISTRO=ubuntu
+        export DISTRO_TAG=$UBUNTU_TAG
+        export DISTRO_VERSION=$UBUNTU_VERSION
+        export DISTRO_SCRIPT=$UBUNTU_SCRIPT
+
+
+# Do not use this template directly, you can not reuse the produced image
+# as it is tagged with $CI_JOB_ID
+..ubuntu@container-template:
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+  script:
+  - *distro_vars
+  - echo Building for $DISTRO_TAG with a $DISTRO_VERSION base
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
+  - buildmnt=$(buildah mount $buildcntr)
+  - echo 'path-exclude=/usr/share/doc/*' > $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+  - echo 'path-exclude=/usr/share/locale/*' >> $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+  - echo 'path-exclude=/usr/share/man/*' >> $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+  - echo 'APT::Install-Recommends "false";' > $buildmnt/etc/apt/apt.conf
+  - echo '#!/bin/sh' > $buildmnt/usr/sbin/policy-rc.d
+  - echo 'exit 101' >> $buildmnt/usr/sbin/policy-rc.d
+  - chmod +x $buildmnt/usr/sbin/policy-rc.d
+
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive add-apt-repository universe
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS
+
+    # check if there is an optional post install script and run it
+  - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;
+    then
+      echo Running $DISTRO_SCRIPT ;
+      cp $DISTRO_SCRIPT $buildmnt/script.sh ;
+      buildah run $buildcntr bash /script.sh ;
+      rm $buildmnt/script.sh ;
+    fi
+
+    # do not store the packages database, it's pointless
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get clean
+  - rm -f $buildmnt/var/lib/apt/lists/*.lz4
+
+    # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - buildah commit $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+
+    # mark the current stage as successed, to get the result in after_script
+  - touch .success
+
+
+.ubuntu@container-build:
+  extends: ..ubuntu@container-template
+  after_script:
+  # if we did not build, or if there was a failure, exit
+  # (the exit status does not matter here)
+  - if [[ ! -e .success ]] ;
+    then
+      exit 0;
+    fi
+
+  - *distro_vars
+
+  - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+
+
+.ubuntu@container-ifnot-exists:
+  extends: .ubuntu@container-build
+  before_script:
+  # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  - *distro_vars
+
+  # check if our image is already in the current registry
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+
+  # copy the original image into the current project registry namespace
+  - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
