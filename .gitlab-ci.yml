@@ -26,7 +26,7 @@ include:
 
 
 variables:
-  BOOTSTRAP_TAG: '2019-03-13.0'
+  BOOTSTRAP_TAG: '2019-03-14.0'
   ARCH_PKGS:   'wget'
   DEBIAN_DEBS: 'curl'
   FEDORA_RPMS: 'wget'

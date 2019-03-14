@@ -41,13 +41,13 @@
   # https://gitlab.com/gitlab-com/support-forum/issues/4349
   - export BUILDAH_FORMAT=docker
 
-  - buildcntr=$(buildah from --quiet archlinux/base)
-  - buildah run $buildcntr pacman -S --refresh
-  - buildah run $buildcntr pacman -S --sysupgrade --noconfirm
-  - buildah run $buildcntr pacman -S --noconfirm buildah podman skopeo jq
-  # in case it doesn't exist yet, otherwise pacman clean fails
-  - buildah run $buildcntr mkdir -p /var/cache/pacman/pkg
-  - buildah run $buildcntr pacman -S --clean --noconfirm
+  - buildcntr=$(buildah from fedora:29)
+  - buildah run $buildcntr dnf upgrade -y
+  - buildah run $buildcntr dnf install -y buildah podman skopeo jq
+    # do not store the packages database, it's pointless
+  - buildah run $buildcntr dnf clean all
+
+    # set up the working directory
   - buildah config --workingdir /app $buildcntr
   - export buildmnt=$(buildah mount $buildcntr)
   - |
