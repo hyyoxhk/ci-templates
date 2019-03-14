@@ -24,6 +24,7 @@
 # we can not reuse exported variables in after_script,
 # so have a common definition
 .fedora_vars: &distro_vars |
+        # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
         export DISTRO=fedora
@@ -44,6 +45,7 @@
     - *distro_vars
 
   script:
+  - *distro_vars
   - echo Building for $DISTRO_TAG with a $DISTRO_VERSION base
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
