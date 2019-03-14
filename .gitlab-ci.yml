@@ -202,26 +202,6 @@ debian:stretch@check:
 
 
 #
-# straight debian build with backports and test
-#
-debian:stretch-backports@container-build:
-  extends: .debian:ci@container-build
-  variables:
-    DEBIAN_TAG: $CI_PIPELINE_ID-backports
-    DEBIAN_VERSION: stretch
-    DEBIAN_USE_BACKPORTS: 'true'
-    DEBIAN_DEBS: 'gnupg'
-
-debian:stretch-backports@check:
-  stage: debian_check
-  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID-backports
-  script:
-      # make sure gnupg 2.2 has been installed
-    - |
-     [[ x"$(gpg --version | head -n 1 | awk '{ print $3; }')" > x"2.2" ]] && echo gnupg 2.2.x has been installed
-
-
-#
 # make sure we do rebuild the image if the tag does not exist and check
 #
 debian-forced:stretch@container-ifnot-exists:

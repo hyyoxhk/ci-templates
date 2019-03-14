@@ -3,7 +3,7 @@
 # This template will create a fedora image based on the following variables:
 #
 #  - FEDORA_VERSION: the fedora version (28, 29, rawhide, etc...)
-#  - FEDORA_RPMS:    list of packages that needs to be installed
+#  - FEDORA_RPMS:    if set, list of packages that needs to be installed
 #  - FEDORA_SCRIPT:  if set, this path should point to a bash script that will
 #                    be run once the packages have been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -51,7 +51,10 @@
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
   - buildah run $buildcntr dnf upgrade -y
-  - buildah run $buildcntr dnf install -y $FEDORA_RPMS
+  - if [[ x"$FEDORA_RPMS" != x"" ]] ;
+    then
+      buildah run $buildcntr dnf install -y $FEDORA_RPMS ;
+    fi
 
     # check if there is an optional post install script and run it
   - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;

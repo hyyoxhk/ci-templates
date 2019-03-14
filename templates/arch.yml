@@ -2,7 +2,7 @@
 
 # This template will create a arch image based on the following variables:
 #
-#  - ARCH_PKGS:    list of packages that needs to be installed
+#  - ARCH_PKGS:    if set, list of packages that needs to be installed
 #  - ARCH_SCRIPT:  if set, this path should point to a bash script that will
 #                  be run once the packages have been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -51,7 +51,10 @@
   - buildmnt=$(buildah mount $buildcntr)
   - buildah run $buildcntr pacman -S --refresh
   - buildah run $buildcntr pacman -S --sysupgrade --noconfirm
-  - buildah run $buildcntr pacman -S --noconfirm $ARCH_PKGS
+  - if [[ x"$ARCH_PKGS" != x"" ]] ;
+    then
+      buildah run $buildcntr pacman -S --noconfirm $ARCH_PKGS ;
+    fi
 
     # check if there is an optional post install script and run it
   - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;

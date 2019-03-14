@@ -3,12 +3,9 @@
 # This template will create a debian image based on the following variables:
 #
 #  - DEBIAN_VERSION: the debian version (stretch, sid, etc...)
-#  - DEBIAN_DEBS:    list of packages that needs to be installed
+#  - DEBIAN_DEBS:    if set, list of packages that needs to be installed
 #  - DEBIAN_SCRIPT:  if set, this path should point to a bash script that will
 #                    be run once the packages have been installed
-#  - DEBIAN_USE_BACKPORTS: (true | false), defaults to false. If set, make use
-#                          of the backports for stable. This will reuse
-#                          DEBIAN_VERSION for enabling the backports repo.
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - DEBIAN_TAG:     tag to copy the image from the upstream registry. If the
@@ -53,13 +50,6 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
-  - if [[ x"$DEBIAN_USE_BACKPORTS" == x"true" ]] ;
-    then
-      echo Enabling $DEBIAN_VERSION-backports ;
-      echo "deb http://deb.debian.org/debian $DEBIAN_VERSION-backports main" >>
-            $buildmnt/etc/apt/sources.list ;
-      export BACKPORTS_PARAMS="-t $DEBIAN_VERSION-backports" ;
-    fi
   - buildah run $buildcntr cat /etc/apt/sources.list
   - echo 'path-exclude=/usr/share/doc/*' > $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
   - echo 'path-exclude=/usr/share/locale/*' >> $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
@@ -70,7 +60,11 @@
   - chmod +x $buildmnt/usr/sbin/policy-rc.d
 
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends $BACKPORTS_PARAMS install $DEBIAN_DEBS
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+  - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
+    then
+      buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS ;
+    fi
 
     # check if there is an optional post install script and run it
   - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;

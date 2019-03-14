@@ -3,7 +3,7 @@
 # This template will create a ubuntu image based on the following variables:
 #
 #  - UBUNTU_VERSION: the ubuntu version (18.04, 16.04, etc...)
-#  - UBUNTU_DEBS:    list of packages that needs to be installed
+#  - UBUNTU_DEBS:    if set, list of packages that needs to be installed
 #  - UBUNTU_SCRIPT:  if set, this path should point to a bash script that will
 #                    be run once the packages have been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -59,10 +59,11 @@
   - chmod +x $buildmnt/usr/sbin/policy-rc.d
 
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive add-apt-repository universe
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+  - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
+    then
+      buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS ;
+    fi
 
     # check if there is an optional post install script and run it
   - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;
