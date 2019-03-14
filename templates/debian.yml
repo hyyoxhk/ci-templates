@@ -36,10 +36,15 @@
 
     # https://gitlab.com/gitlab-com/support-forum/issues/4349
     - export BUILDAH_FORMAT=docker
+
+    - export DISTRO=debian
+    - export DISTRO_TAG=$DEBIAN_TAG
+    - export DISTRO_VERSION=$DEBIAN_VERSION
+    - export DISTRO_SCRIPT=$DEBIAN_SCRIPT
   script:
-  - echo Building for $DEBIAN_TAG with a $DEBIAN_VERSION base
+  - echo Building for $DISTRO_TAG with a $DISTRO_VERSION base
     # initial set up: take the base image, update it and install the packages
-  - buildcntr=$(buildah from --quiet debian:$DEBIAN_VERSION)
+  - buildcntr=$(buildah from --quiet $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
   - if [[ x"$DEBIAN_USE_BACKPORTS" == x"true" ]] ;
     then
@@ -54,10 +59,10 @@
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends $BACKPORTS_PARAMS install $DEBIAN_DEBS
 
     # check if there is an optional post install script and run it
-  - if [[ (x"$DEBIAN_SCRIPT" != x"") && -e $DEBIAN_SCRIPT ]] ;
+  - if [[ (x"$DISTRO_SCRIPT" != x"") && -e $DISTRO_SCRIPT ]] ;
     then
-      echo Running $DEBIAN_SCRIPT ;
-      cp $DEBIAN_SCRIPT $buildmnt/script.sh ;
+      echo Running $DISTRO_SCRIPT ;
+      cp $DISTRO_SCRIPT $buildmnt/script.sh ;
       buildah run $buildcntr bash /script.sh ;
       rm $buildmnt/script.sh ;
     fi
@@ -70,12 +75,12 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
+  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
     # clean up the working container
   - buildah rm $buildcntr
 
     # push the container image to the registry
-  - podman push --quiet $CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
+  - podman push --quiet $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
 
     # mark the current stage as successed, to get the result in after_script
   - touch .success
@@ -95,8 +100,8 @@
       exit 0;
     fi
 
-  - skopeo copy docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$CI_JOB_ID
-                docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG
+  - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
 
 
 .debian@container-ifnot-exists:
@@ -106,8 +111,8 @@
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
   # check if our image is already in the current registry
-  - skopeo inspect docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG > /dev/null && exit 0 || true
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
 
   # copy the original image into the current project registry namespace
-  - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/debian/$DEBIAN_VERSION:$DEBIAN_TAG
-                docker://$CI_REGISTRY_IMAGE/debian/$DEBIAN_VERSION:$DEBIAN_TAG && exit 0 || true
+  - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
