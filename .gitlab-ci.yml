@@ -30,7 +30,7 @@ variables:
   ARCH_PKGS:   'wget'
   DEBIAN_DEBS: 'curl'
   FEDORA_RPMS: 'wget'
-  UBUNTU_RPMS: 'curl'
+  UBUNTU_DEBS: 'curl'
   ARCH_SCRIPT: 'test/debian.sh'
   DEBIAN_SCRIPT: 'test/debian.sh'
   FEDORA_SCRIPT: 'test/debian.sh'
