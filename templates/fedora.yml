@@ -21,23 +21,28 @@
 #     only if $FEDORA is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
+# we can not reuse exported variables in after_script,
+# so have a common definition
+.fedora_vars: &distro_vars |
+        # https://gitlab.com/gitlab-com/support-forum/issues/4349
+        export BUILDAH_FORMAT=docker
+        export DISTRO=fedora
+        export DISTRO_TAG=$FEDORA_TAG
+        export DISTRO_VERSION=$FEDORA_VERSION
+        export DISTRO_SCRIPT=$FEDORA_SCRIPT
+
 
 # Do not use this template directly, you can not reuse the produced image
 # as it is tagged with $CI_JOB_ID
-.fedora@container-template:
+..fedora@container-template:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
   stage: build
   before_script:
     # log in to the registry
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-    # https://gitlab.com/gitlab-com/support-forum/issues/4349
-    - export BUILDAH_FORMAT=docker
+    - *distro_vars
 
-    - export DISTRO=fedora
-    - export DISTRO_TAG=$FEDORA_TAG
-    - export DISTRO_VERSION=$FEDORA_VERSION
-    - export DISTRO_SCRIPT=$FEDORA_SCRIPT
   script:
   - echo Building for $DISTRO_TAG with a $DISTRO_VERSION base
     # initial set up: take the base image, update it and install the packages
@@ -55,7 +60,7 @@
       rm $buildmnt/script.sh ;
     fi
 
-    # do not store the dnf database, it s pointless
+    # do not store the packages database, it's pointless
   - buildah run $buildcntr dnf clean all
 
     # set up the working directory
@@ -73,12 +78,9 @@
     # mark the current stage as successed, to get the result in after_script
   - touch .success
 
-.fedora@container-build:
-  extends: .fedora@container-template
-  before_script:
-  # log in to the registry
-  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
+.fedora@container-build:
+  extends: ..fedora@container-template
   after_script:
   # if we did not build, or if there was a failure, exit
   # (the exit status does not matter here)
@@ -86,6 +88,8 @@
     then
       exit 0;
     fi
+
+  - *distro_vars
 
   - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
                 docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
@@ -96,6 +100,8 @@
   before_script:
   # log in to the registry
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  - *distro_vars
 
   # check if our image is already in the current registry
   - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
