@@ -26,15 +26,15 @@ include:
 
 
 variables:
-  BOOTSTRAP_TAG: '2019-03-14.0'
+  BOOTSTRAP_TAG: '2019-03-15.0'
   ARCH_PKGS:   'wget'
   DEBIAN_DEBS: 'curl'
   FEDORA_RPMS: 'wget'
   UBUNTU_DEBS: 'curl'
-  ARCH_SCRIPT: 'test/debian.sh'
-  DEBIAN_SCRIPT: 'test/debian.sh'
-  FEDORA_SCRIPT: 'test/debian.sh'
-  UBUNTU_SCRIPT: 'test/debian.sh'
+  ARCH_EXEC: '.hidden_dir/test.sh /test_file'
+  DEBIAN_EXEC: './test/script.sh'
+  FEDORA_EXEC: '/bin/bash test/script.sh'
+  UBUNTU_EXEC: 'sh test/script.sh'
 
 
 stages:

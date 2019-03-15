@@ -43,7 +43,7 @@
 
   - buildcntr=$(buildah from fedora:29)
   - buildah run $buildcntr dnf upgrade -y
-  - buildah run $buildcntr dnf install -y buildah podman skopeo jq
+  - buildah run $buildcntr dnf install -y buildah podman skopeo jq git
     # do not store the packages database, it's pointless
   - buildah run $buildcntr dnf clean all
 
