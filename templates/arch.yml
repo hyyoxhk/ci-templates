@@ -80,6 +80,10 @@
   - buildah rm $buildcntr
 
     # push the container image to the registry
+    # There is a bug when pushing 2 tags in the same repo with the same base:
+    # this may fail. Just retry it after.
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID || true
+  - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
 
     # mark the current stage as successed, to get the result in after_script

@@ -123,4 +123,9 @@
   - buildah rm $buildcntr
    
   - podman images
-  - podman push --quiet $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+
+  # bug when pushing 2 tags in the same repo with the same base,
+  # this may fail. Just retry it after
+  - podman push $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
