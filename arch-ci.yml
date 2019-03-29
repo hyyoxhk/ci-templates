@@ -1,0 +1,99 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+variables:
+  ARCH_PKGS:   'wget'
+  ARCH_EXEC: '.hidden_dir/test.sh /test_file'
+
+
+################################################################################
+#
+# Arch linux checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
+.arch:ci@container-build:
+  extends: .arch@container-build
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: arch_container_build
+
+
+.arch:ci@container-ifnot-exists:
+  extends: .arch@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: arch_container_build
+
+
+#
+# generic arch checks
+#
+.arch@check:
+  stage: arch_check
+  script:
+      # make sure wget has been installed
+    - wget https://gitlab.freedesktop.org
+      # make sure our test script has been run
+    - if [[ -e /test_file ]] ;
+      then
+        echo $ARCH_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+#
+# straight arch build and test
+#
+arch@container-build:
+  extends: .arch:ci@container-build
+  variables:
+    ARCH_TAG: $CI_PIPELINE_ID
+
+
+arch@check:
+  extends: .arch@check
+  image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_ID
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+arch-forced@container-ifnot-exists:
+  extends: .arch:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    ARCH_TAG: $CI_PIPELINE_IID
+
+
+arch-forced-ifnot-exists@check:
+  extends: .arch@check
+  image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+arch@container-ifnot-exists:
+  extends: .arch:ci@container-ifnot-exists
+  stage: arch_check
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    ARCH_TAG: $CI_PIPELINE_IID
+    ARCH_PKGS: 'this-package-should-not-exists'
+
+
+#
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+.arch-upstream@container-ifnot-exists:
+  extends: .arch:ci@container-ifnot-exists
+  stage: arch_check
+  variables:
+    UPSTREAM_REPO: libinput/libinput
+    ARCH_TAG: latest
+    ARCH_PKGS: 'this-package-should-not-exists'

@@ -1,0 +1,115 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+variables:
+  DEBIAN_DEBS: 'curl'
+  DEBIAN_EXEC: './test/script.sh'
+
+
+################################################################################
+#
+# Debian checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
+.debian:ci@container-build:
+  extends: .debian@container-build
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: debian_container_build
+
+
+.debian:ci@container-ifnot-exists:
+  extends: .debian@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: debian_container_build
+
+
+#
+# generic debian checks
+#
+.debian@check:
+  stage: debian_check
+  script:
+      # make sure curl has been installed
+    - curl --insecure https://gitlab.freedesktop.org
+      # make sure our test script has been run
+    - if [[ -e /test_file ]] ;
+      then
+        echo $DEBIAN_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+#
+# straight debian build and test
+#
+debian:stretch@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
+    DEBIAN_VERSION: stretch
+
+debian:stretch@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+debian-forced:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: $CI_PIPELINE_IID
+
+debian:forced-ifnot-exists@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+debian:stretch@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  stage: debian_check
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: $CI_PIPELINE_IID
+    DEBIAN_DEBS: 'this-package-should-not-exists'
+
+
+#
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+.debian:stretch-upstream@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  stage: debian_check
+  variables:
+    UPSTREAM_REPO: FIXME
+    DEBIAN_VERSION: stretch
+    DEBIAN_TAG: latest
+    DEBIAN_DEBS: 'this-package-should-not-exists'
+
+
+#
+# Try our debian scripts with an other version and check
+#
+debian:buster@container-build:
+  extends: .debian:ci@container-build
+  variables:
+    DEBIAN_TAG: $CI_PIPELINE_ID
+    DEBIAN_VERSION: buster
+
+debian:buster@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID

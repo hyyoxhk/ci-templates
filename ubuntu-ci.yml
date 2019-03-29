@@ -1,0 +1,115 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+variables:
+  UBUNTU_DEBS: 'curl'
+  UBUNTU_EXEC: 'sh test/script.sh'
+
+
+################################################################################
+#
+# Ubuntu checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
+.ubuntu:ci@container-build:
+  extends: .ubuntu@container-build
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: ubuntu_container_build
+
+
+.ubuntu:ci@container-ifnot-exists:
+  extends: .ubuntu@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: ubuntu_container_build
+
+
+#
+# generic ubuntu checks
+#
+.ubuntu@check:
+  stage: ubuntu_check
+  script:
+      # make sure curl has been installed
+    - curl --insecure https://gitlab.freedesktop.org
+      # make sure our test script has been run
+    - if [[ -e /test_file ]] ;
+      then
+        echo $DEBIAN_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+#
+# straight ubuntu build and test
+#
+ubuntu:18.10@container-build:
+  extends: .ubuntu:ci@container-build
+  variables:
+    UBUNTU_TAG: $CI_PIPELINE_ID
+    UBUNTU_VERSION: '18.10'
+
+ubuntu:18.10@check:
+  extends: .ubuntu@check
+  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_ID
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+ubuntu-forced:18.10@container-ifnot-exists:
+  extends: .ubuntu:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: $CI_PIPELINE_IID
+
+ubuntu:forced-ifnot-exists@check:
+  extends: .ubuntu@check
+  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+ubuntu:18.10@container-ifnot-exists:
+  extends: .ubuntu:ci@container-ifnot-exists
+  stage: ubuntu_check
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: $CI_PIPELINE_IID
+    UBUNTU_DEBS: 'this-package-should-not-exists'
+
+
+#
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+.ubuntu:18.10-upstream@container-ifnot-exists:
+  extends: .ubuntu:ci@container-ifnot-exists
+  stage: ubuntu_check
+  variables:
+    UPSTREAM_REPO: FIXME
+    UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: latest
+    UBUNTU_DEBS: 'this-package-should-not-exists'
+
+
+#
+# Try our debian scripts with an other version and check
+#
+ubuntu:18.04@container-build:
+  extends: .ubuntu:ci@container-build
+  variables:
+    UBUNTU_TAG: $CI_PIPELINE_ID
+    UBUNTU_VERSION: '18.04'
+
+ubuntu:18.04@check:
+  extends: .ubuntu@check
+  image: $CI_REGISTRY_IMAGE/ubuntu/18.04:$CI_PIPELINE_ID
