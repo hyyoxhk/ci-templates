@@ -63,7 +63,7 @@
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
   - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
     then
-      buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS ;
+      buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y install $DEBIAN_DEBS ;
     fi
 
     # check if there is an optional post install script and run it
