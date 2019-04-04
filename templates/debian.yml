@@ -60,7 +60,7 @@
   - chmod +x $buildmnt/usr/sbin/policy-rc.d
 
   - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
+  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
   - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
     then
       buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install $DEBIAN_DEBS ;
