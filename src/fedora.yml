@@ -17,3 +17,10 @@ fedora:
 
   curl: true
 
+  qemu_packages:
+    - openssh-clients
+    - openssh-server
+    - NetworkManager
+    - iproute
+    - iputils
+    - git-core

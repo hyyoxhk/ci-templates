@@ -51,6 +51,23 @@ variables:
     - sanity check
 
 #
+# Qemu build
+#
+.ubuntu:ci@qemu-build:
+  extends: .ubuntu@qemu-build
+  image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
+  stage: ubuntu_container_build
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+  needs:
+    - bootstrap-qemu-mkosi
+    - sanity check
+
+#
 # generic ubuntu checks
 #
 .ubuntu@check:
@@ -65,6 +82,37 @@ variables:
       else
         exit 1 ;
       fi
+
+
+.ubuntu@qemu-check:
+  stage: ubuntu_check
+  tags:
+    - kvm
+  script:
+    - pushd /app
+      # start the VM
+    - bash /app/start_vm.sh
+      # make sure curl has been installed
+    - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+
+      # start the VM, with the kernel parameters
+    - bash /app/start_vm_kernel.sh
+      # make sure we can still use curl
+    - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
 
 
 #
@@ -99,6 +147,23 @@ ubuntu:18.10@check@arm64v8:
     - aarch64
   needs:
     - ubuntu:18.10@container-build@arm64v8
+    - sanity check
+
+
+ubuntu:18.10@qemu-build:
+  extends: .ubuntu:ci@qemu-build
+  variables:
+    UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: qemu-$CI_PIPELINE_ID
+    UBUNTU_DEBS: 'wget curl'
+    QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
+
+
+ubuntu:18.10@qemu-check:
+  extends: .ubuntu@qemu-check
+  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:qemu-$CI_PIPELINE_ID
+  needs:
+    - ubuntu:18.10@qemu-build
     - sanity check
 
 

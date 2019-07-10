@@ -26,3 +26,10 @@ debian:
   clean:
     - env DEBIAN_FRONTEND=noninteractive apt-get clean
     - rm -f /var/lib/apt/lists/*.lz4
+
+  qemu_packages:
+    - openssh-client
+    - openssh-server
+    - network-manager
+    - iproute2
+    - git

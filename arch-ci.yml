@@ -34,6 +34,23 @@ variables:
 
 
 #
+# Qemu build
+#
+.arch:ci@qemu-build:
+  extends: .arch@qemu-build
+  image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
+  stage: arch_container_build
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+  needs:
+    - bootstrap-qemu-mkosi
+    - sanity check
+
+#
 # generic arch checks
 #
 .arch@check:
@@ -50,6 +67,37 @@ variables:
       fi
 
 
+.arch@qemu-check:
+  stage: arch_check
+  tags:
+    - kvm
+  script:
+    - pushd /app
+      # start the VM
+    - bash /app/start_vm.sh
+      # make sure wget has been installed
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+
+      # start the VM, with the kernel parameters
+    - bash /app/start_vm_kernel.sh
+      # make sure we can still use wget
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+
+
 #
 # straight arch build and test
 #
@@ -64,6 +112,22 @@ arch:rolling@check:
   image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_ID
   needs:
     - arch:rolling@container-build
+    - sanity check
+
+
+arch:rolling@qemu-build:
+  extends: .arch:ci@qemu-build
+  variables:
+    ARCH_TAG: qemu-$CI_PIPELINE_ID
+    ARCH_PKGS: 'wget curl'
+    QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
+
+
+arch:rolling@qemu-check:
+  extends: .arch@qemu-check
+  image: $CI_REGISTRY_IMAGE/archlinux/rolling:qemu-$CI_PIPELINE_ID
+  needs:
+    - arch:rolling@qemu-build
     - sanity check
 
 

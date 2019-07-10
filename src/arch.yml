@@ -19,3 +19,11 @@ arch:
   aarch64: false
 
   curl: true
+
+  qemu_packages:
+    - openssh
+    - networkmanager
+    - iproute
+    - iputils
+    - git
+    - sed

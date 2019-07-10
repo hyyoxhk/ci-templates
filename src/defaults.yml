@@ -74,6 +74,12 @@ defaults:
   ## base image)
   curl: false
 
+  ## @qemu_packages: list of packages that are required on a base qemu image
+  ##
+  ## if this variable is not defined, the matching qemu template will not
+  ## be generated
+  qemu_packages: ""
+
   ##############################################################################
 
   ## The following variables are infered and don't need to be overwritten by
@@ -120,6 +126,16 @@ defaults:
   version_examples: {{ ', '.join(versions) }}
   {% else %}
   version_examples: {{ version }}
+  {% endif %}
+
+  ## @qemu: controls whether we should create the qemu templates or not
+  ##
+  ## This is purely to prettify the generated template.
+  ##
+  {% if qemu_packages %}
+  qemu: true
+  {% else %}
+  qemu: false
   {% endif %}
 
 

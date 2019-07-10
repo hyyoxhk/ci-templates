@@ -55,6 +55,25 @@ variables:
     - bootstrap@arm64v8
     - sanity check
 {% endif %}
+{% if qemu %}
+
+#
+# Qemu build
+#
+.{{distribution}}:ci@qemu-build:
+  extends: .{{distribution}}@qemu-build
+  image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
+  stage: {{distribution}}_container_build
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+  needs:
+    - bootstrap-qemu-mkosi
+    - sanity check
+{% endif %}
 
 #
 # generic {{distribution}} checks
@@ -76,6 +95,49 @@ variables:
       else
         exit 1 ;
       fi
+{% if qemu %}
+
+
+.{{distribution}}@qemu-check:
+  stage: {{distribution}}_check
+  tags:
+    - kvm
+  script:
+    - pushd /app
+      # start the VM
+    - bash /app/start_vm.sh
+{% if not curl %}
+      # make sure curl has been installed
+    - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+{% else %}
+      # make sure wget has been installed
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+{% endif %}
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+
+      # start the VM, with the kernel parameters
+    - bash /app/start_vm_kernel.sh
+{% if not curl %}
+      # make sure we can still use curl
+    - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+{% else %}
+      # make sure we can still use wget
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+{% endif %}
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+{% endif %}
 
 
 {# We only do the full test on the first version of the distribution #}
@@ -117,6 +179,27 @@ variables:
     - aarch64
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build@arm64v8
+    - sanity check
+{% endif %}
+{% if qemu %}
+
+
+{{distribution}}:{{ versions[0] }}@qemu-build:
+  extends: .{{distribution}}:ci@qemu-build
+  variables:
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: qemu-$CI_PIPELINE_ID
+    {{ PACKAGES }}: 'wget curl'
+    QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
+
+
+{{distribution}}:{{ versions[0] }}@qemu-check:
+  extends: .{{distribution}}@qemu-check
+  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:qemu-$CI_PIPELINE_ID
+  needs:
+    - {{distribution}}:{{ versions[0] }}@qemu-build
     - sanity check
 {% endif %}
 

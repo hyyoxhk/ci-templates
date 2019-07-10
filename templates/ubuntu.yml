@@ -133,6 +133,204 @@
     - aarch64
 
 
+.ubuntu@qemu-build:
+  extends: .ubuntu@container-build
+  tags:
+    - kvm
+  image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2019-12-10
+  script:
+  - *distro_vars
+
+  # start our current base mkosi image
+  - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
+
+  - QEMU_VERSION=$UBUNTU_VERSION
+
+  # for ubuntu, we need to use the name, not the number
+  - |
+    declare -A versions
+    versions["4.10"]=warty
+    versions["5.04"]=hoary
+    versions["5.10"]=breezy
+    versions["6.06"]=dapper
+    versions["6.10"]=edgy
+    versions["7.04"]=feisty
+    versions["7.10"]=gutsy
+    versions["8.04"]=hardy
+    versions["8.10"]=intrepid
+    versions["9.04"]=jaunty
+    versions["9.10"]=karmic
+    versions["10.04"]=lucid
+    versions["10.10"]=maverick
+    versions["11.04"]=natty
+    versions["11.10"]=oneiric
+    versions["12.04"]=precise
+    versions["12.10"]=quantal
+    versions["13.04"]=raring
+    versions["13.10"]=saucy
+    versions["14.04"]=trusty
+    versions["14.10"]=utopic
+    versions["15.04"]=vivid
+    versions["15.10"]=wily
+    versions["16.04"]=xenial
+    versions["16.10"]=yakkety
+    versions["17.04"]=zesty
+    versions["17.10"]=artful
+    versions["18.04"]=bionic
+    versions["18.10"]=cosmic
+    versions["19.04"]=disco
+    versions["19.10"]=eoan
+    versions["20.04"]=focal
+  - if [[ x"${versions[$UBUNTU_VERSION]}" != x"" ]] ;
+    then
+      QEMU_VERSION=${versions["$UBUNTU_VERSION"]} ;
+    fi
+
+  - |
+    cat <<EOF > mkosi.default
+    [Distribution]
+    Distribution=ubuntu
+    Release=$QEMU_VERSION
+
+    [Output]
+    Format=gpt_ext4
+    Bootable=yes
+    BootProtocols=bios
+    Password=root
+    KernelCommandLine=!* selinux=0 audit=0 rw console=tty0 console=ttyS0
+
+    [Partitions]
+    RootSize=2G
+
+    [Packages]
+    # The packages to appear in both the build and the final image
+    Packages=
+      openssh-client
+      openssh-server
+      network-manager
+      iproute2
+      git
+    EOF
+  - echo $UBUNTU_DEBS | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+
+  # create a new ssh key
+  - ssh-keygen -t rsa -f /root/.ssh/id_rsa_target -N ''
+  - mkdir -p mkosi.extra/root/.ssh
+  - chmod 700 mkosi.extra/root/.ssh
+  - cp /root/.ssh/id_rsa_target.pub mkosi.extra/root/.ssh/authorized_keys
+  - chmod 600 mkosi.extra/root/.ssh/authorized_keys
+
+  # ubuntu disables NetworkManager through /usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf
+  # overwrite it in /etc to allow NM to manage ens3
+  - mkdir -p mkosi.extra/etc/NetworkManager/conf.d/
+  - touch mkosi.extra/etc/NetworkManager/conf.d/10-globally-managed-devices.conf
+
+  # enable sshd on the target
+  - mkdir -p mkosi.extra/etc/systemd/system/multi-user.target.wants
+
+  # send the mkosi files to the VM
+  - scp -P 5555 mkosi.default localhost:/root/mkosi.default
+  - scp -P 5555 -r mkosi.extra localhost:/root/
+
+  # enable sshd on the target
+  - ssh localhost -p 5555 ln -s /usr/lib/systemd/system/sshd.service
+                                mkosi.extra/etc/systemd/system/multi-user.target.wants/sshd.service
+
+  # create a cache folder (useful only when manually testing this script)
+  - ssh localhost -p 5555 mkdir mkosi.cache
+
+  # run mkosi in the VM!
+  - ssh localhost -p 5555 mkosi/mkosi
+
+  # mount the root partition locally to extract the kernel and initramfs
+  - ssh localhost -p 5555 mkdir loop
+  - offset=$(ssh localhost -p 5555 fdisk -l image.raw | grep image.raw2 | cut -d ' ' -f 3)
+  - ssh localhost -p 5555 mount -o ro,loop,offset=$(($offset * 512)) image.raw loop/
+
+  # fetch kernel and initramfs
+  - ssh localhost -p 5555 ls loop/boot/
+  - ssh localhost -p 5555 "cp loop/boot/vmlinuz* loop/boot/initr* ."
+
+  - ssh localhost -p 5555 umount loop/
+
+  # now compress the image (we wanted to extract first the kernel and initrd)
+  - ssh localhost -p 5555 xz -T0 image.raw
+
+  # fetch the image and kernel
+  - scp -P 5555 localhost:image.raw.xz dest-image.raw.xz
+
+  - scp -P 5555 localhost:vmlinuz\* localhost:initr\* .
+
+  # terminate qemu
+  - kill $(pgrep qemu) || true
+
+  # building the final image
+  - |
+    cat > /etc/containers/storage.conf <<EOF
+    [storage]
+    driver = "vfs"
+    runroot = "/var/run/containers/storage"
+    graphroot = "/var/lib/containers/storage"
+    EOF
+
+  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:2019-12-10}
+
+  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $QEMU_BASE_IMAGE
+
+  - buildcntr=$(buildah from $QEMU_BASE_IMAGE)
+  - buildmnt=$(buildah mount $buildcntr)
+
+  # insert our final VM image we just built
+  - mkdir -p $buildmnt/app
+  - mv dest-image.raw.xz $buildmnt/app/image.raw.xz
+  - mv vmlinuz* initr* $buildmnt/app/
+  - mkdir $buildmnt/root/.ssh
+  - chmod 700 $buildmnt/root/.ssh
+  - cp /root/.ssh/id_rsa_target $buildmnt/root/.ssh/id_rsa
+  - cp /root/.ssh/id_rsa_target.pub $buildmnt/root/.ssh/id_rsa.pub
+
+  - |
+    cat > $buildmnt/app/start_vm_kernel.sh <<EOF
+    #!/bin/bash
+
+    set -x
+
+    KERNEL=\$1
+    shift
+
+    set -e
+
+    if [[ x"\$KERNEL" == x"" ]]
+    then
+      KERNEL=\$(ls /app/vmlinuz* | sort | tail -1)
+    fi
+
+    INITRD=\$(ls /app/initr* | sort | tail -1)
+
+    bash /app/start_vm.sh -kernel \$KERNEL \\
+                          -initrd \$INITRD \\
+                          -append "root=/dev/sda2 selinux=0 audit=0 rw console=tty0 console=ttyS0" \\
+                          "\$@"
+
+    EOF
+  - chmod +x $buildmnt/app/start_vm_kernel.sh
+
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+
+    # tag the current container
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+    # There is a bug when pushing 2 tags in the same repo with the same base:
+    # this may fail. Just retry it after.
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+
 .before_script_ifnot_exists: &before_script_ifnot_exists
   before_script:
     # log in to the registry
@@ -181,3 +379,8 @@
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2019-12-02
   tags:
     - aarch64
+
+.ubuntu@qemu-ifnot-exists:
+  extends: .ubuntu@qemu-build
+  <<: *before_script_ifnot_exists
+

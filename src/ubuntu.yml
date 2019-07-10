@@ -24,3 +24,44 @@ ubuntu:
   clean:
     - env DEBIAN_FRONTEND=noninteractive apt-get clean
     - rm -f /var/lib/apt/lists/*.lz4
+
+  qemu_packages:
+    - openssh-client
+    - openssh-server
+    - network-manager
+    - iproute2
+    - git
+
+  ubuntu_versions:
+    '4.10': Warty
+    '5.04': Hoary
+    '5.10': Breezy
+    '6.06': Dapper
+    '6.10': Edgy
+    '7.04': Feisty
+    '7.10': Gutsy
+    '8.04': Hardy
+    '8.10': Intrepid
+    '9.04': Jaunty
+    '9.10': Karmic
+    '10.04': Lucid
+    '10.10': Maverick
+    '11.04': Natty
+    '11.10': Oneiric
+    '12.04': Precise
+    '12.10': Quantal
+    '13.04': Raring
+    '13.10': Saucy
+    '14.04': Trusty
+    '14.10': Utopic
+    '15.04': Vivid
+    '15.10': Wily
+    '16.04': Xenial
+    '16.10': Yakkety
+    '17.04': Zesty
+    '17.10': Artful
+    '18.04': Bionic
+    '18.10': Cosmic
+    '19.04': Disco
+    '19.10': Eoan
+    '20.04': Focal

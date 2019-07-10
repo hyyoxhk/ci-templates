@@ -51,6 +51,23 @@ variables:
     - sanity check
 
 #
+# Qemu build
+#
+.fedora:ci@qemu-build:
+  extends: .fedora@qemu-build
+  image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
+  stage: fedora_container_build
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
+  needs:
+    - bootstrap-qemu-mkosi
+    - sanity check
+
+#
 # generic fedora checks
 #
 .fedora@check:
@@ -65,6 +82,37 @@ variables:
       else
         exit 1 ;
       fi
+
+
+.fedora@qemu-check:
+  stage: fedora_check
+  tags:
+    - kvm
+  script:
+    - pushd /app
+      # start the VM
+    - bash /app/start_vm.sh
+      # make sure wget has been installed
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+
+      # start the VM, with the kernel parameters
+    - bash /app/start_vm_kernel.sh
+      # make sure we can still use wget
+    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
+      # terminate the VM
+    - ssh -p 5555 localhost halt -p || true
+    - sleep 2
+    - kill $(pgrep qemu) || true
+  artifacts:
+    name: logs-$CI_PIPELINE_ID
+    when: always
+    expire_in: 1 week
+    paths:
+      - console.out
 
 
 #
@@ -99,6 +147,23 @@ fedora:30@check@arm64v8:
     - aarch64
   needs:
     - fedora:30@container-build@arm64v8
+    - sanity check
+
+
+fedora:30@qemu-build:
+  extends: .fedora:ci@qemu-build
+  variables:
+    FEDORA_VERSION: '30'
+    FEDORA_TAG: qemu-$CI_PIPELINE_ID
+    FEDORA_RPMS: 'wget curl'
+    QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
+
+
+fedora:30@qemu-check:
+  extends: .fedora@qemu-check
+  image: $CI_REGISTRY_IMAGE/fedora/30:qemu-$CI_PIPELINE_ID
+  needs:
+    - fedora:30@qemu-build
     - sanity check
 
 
