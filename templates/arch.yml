@@ -30,6 +30,7 @@
         export DISTRO_TAG=$ARCH_TAG
         export DISTRO_VERSION=rolling
         export DISTRO_EXEC=$ARCH_EXEC
+        export BUILDAH_RUN="buildah run --isolation chroot"
 
 
 # Do not use this template directly, you can not reuse the produced image
@@ -49,11 +50,11 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from archlinux/base)
   - buildmnt=$(buildah mount $buildcntr)
-  - buildah run $buildcntr pacman -S --refresh
-  - buildah run $buildcntr pacman -S --sysupgrade --noconfirm
+  - $BUILDAH_RUN $buildcntr pacman -S --refresh
+  - $BUILDAH_RUN $buildcntr pacman -S --sysupgrade --noconfirm
   - if [[ x"$ARCH_PKGS" != x"" ]] ;
     then
-      buildah run $buildcntr pacman -S --noconfirm $ARCH_PKGS ;
+      $BUILDAH_RUN $buildcntr pacman -S --noconfirm $ARCH_PKGS ;
     fi
 
     # check if there is an optional post install script and run it
@@ -68,16 +69,16 @@
       git fetch --depth 1 origin $CI_COMMIT_SHA ;
       git checkout FETCH_HEAD  > /dev/null;
       buildah config --workingdir /tmp/clone $buildcntr ;
-      buildah run $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
       popd ;
       rm -rf $buildmnt/tmp/clone ;
       set +x ;
     fi
 
     # in case it doesn't exist yet, otherwise pacman clean fails
-  - buildah run $buildcntr mkdir -p /var/cache/pacman/pkg
+  - $BUILDAH_RUN $buildcntr mkdir -p /var/cache/pacman/pkg
     # do not store the packages database, it's pointless
-  - buildah run $buildcntr pacman -S --clean --noconfirm
+  - $BUILDAH_RUN $buildcntr pacman -S --clean --noconfirm
 
     # set up the working directory
   - buildah config --workingdir /app $buildcntr

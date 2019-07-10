@@ -31,6 +31,7 @@
         export DISTRO_TAG=$FEDORA_TAG
         export DISTRO_VERSION=$FEDORA_VERSION
         export DISTRO_EXEC=$FEDORA_EXEC
+        export BUILDAH_RUN="buildah run --isolation chroot"
 
 
 # Do not use this template directly, you can not reuse the produced image
@@ -50,10 +51,10 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
-  - buildah run $buildcntr dnf upgrade -y
+  - $BUILDAH_RUN $buildcntr dnf upgrade -y
   - if [[ x"$FEDORA_RPMS" != x"" ]] ;
     then
-      buildah run $buildcntr dnf install -y $FEDORA_RPMS ;
+      $BUILDAH_RUN $buildcntr dnf install -y $FEDORA_RPMS ;
     fi
 
     # check if there is an optional post install script and run it
@@ -68,14 +69,14 @@
       git fetch --depth 1 origin $CI_COMMIT_SHA ;
       git checkout FETCH_HEAD  > /dev/null;
       buildah config --workingdir /tmp/clone $buildcntr ;
-      buildah run $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
       popd ;
       rm -rf $buildmnt/tmp/clone ;
       set +x ;
     fi
 
     # do not store the packages database, it's pointless
-  - buildah run $buildcntr dnf clean all
+  - $BUILDAH_RUN $buildcntr dnf clean all
 
     # set up the working directory
   - buildah config --workingdir /app $buildcntr

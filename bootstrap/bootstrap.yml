@@ -6,6 +6,7 @@
 #                                                               #
 #################################################################
 
+
 # we need a minimalist image capable of buildah, podman, skopeo, curl,
 # jq, date and test. We used to rely on `bootstrap/bootstrap.sh`, but
 # a commit in runc prevented it to be compiled against musl. So we just
@@ -17,6 +18,7 @@
   image: archlinux/base:latest
   stage: bootstrapping
   before_script:
+  - export BUILDAH_RUN="buildah run --isolation chroot"
   # install buildah and podman
   - pacman -S --refresh
   - pacman -S --noconfirm buildah podman
@@ -42,10 +44,10 @@
   - export BUILDAH_FORMAT=docker
 
   - buildcntr=$(buildah from fedora:30)
-  - buildah run $buildcntr dnf upgrade -y
-  - buildah run $buildcntr dnf install -y buildah podman skopeo jq git
+  - $BUILDAH_RUN $buildcntr dnf upgrade -y
+  - $BUILDAH_RUN $buildcntr dnf install -y buildah podman skopeo jq git
     # do not store the packages database, it's pointless
-  - buildah run $buildcntr dnf clean all
+  - $BUILDAH_RUN $buildcntr dnf clean all
 
     # set up the working directory
   - buildah config --workingdir /app $buildcntr
@@ -115,7 +117,7 @@
     graphroot = "/var/lib/containers/storage"
     EOF
 
-  - buildah run $buildcntr podman images || true
+  - $BUILDAH_RUN $buildcntr podman images || true
 
   # tag the current container
   - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG

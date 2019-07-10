@@ -31,6 +31,7 @@
         export DISTRO_TAG=$UBUNTU_TAG
         export DISTRO_VERSION=$UBUNTU_VERSION
         export DISTRO_EXEC=$UBUNTU_EXEC
+        export BUILDAH_RUN="buildah run --isolation chroot"
 
 
 # Do not use this template directly, you can not reuse the produced image
@@ -58,11 +59,11 @@
   - echo 'exit 101' >> $buildmnt/usr/sbin/policy-rc.d
   - chmod +x $buildmnt/usr/sbin/policy-rc.d
 
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+  - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
+  - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
   - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
     then
-      buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS ;
+      $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS ;
     fi
 
     # check if there is an optional post install script and run it
@@ -77,14 +78,14 @@
       git fetch --depth 1 origin $CI_COMMIT_SHA ;
       git checkout FETCH_HEAD  > /dev/null;
       buildah config --workingdir /tmp/clone $buildcntr ;
-      buildah run $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
       popd ;
       rm -rf $buildmnt/tmp/clone ;
       set +x ;
     fi
 
     # do not store the packages database, it's pointless
-  - buildah run $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get clean
+  - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get clean
   - rm -f $buildmnt/var/lib/apt/lists/*.lz4
 
     # set up the working directory
