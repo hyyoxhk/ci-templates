@@ -31,10 +31,12 @@ include:
 
 variables:
   BOOTSTRAP_TAG: '2019-08-13.0'
+  QEMU_TAG: '2019-08-06.0'
 
 
 stages:
   - bootstrapping
+  - bootstrapping_qemu
   - arch_container_build
   - arch_check
   - ubuntu_container_build
@@ -52,6 +54,10 @@ bootstrap:
 
 bootstrap@arm64v8:
   extends: .bootstrap@arm64v8
+
+
+bootstrap-qemu:
+  extends: .qemu
 
 
 #
@@ -81,6 +87,22 @@ bootstrap-push@arm64v8:
     - export ARCH="arm64v8/"
   tags:
     - aarch64
+  only:
+    refs:
+      - master
+
+
+bootstrap-qemu-push@push:
+  stage: container_push
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    # push the container image to the registry
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/qemu:$QEMU_TAG docker://$CI_REGISTRY_IMAGE/qemu:latest
+  variables:
+    GIT_STRATEGY: none
   only:
     refs:
       - master

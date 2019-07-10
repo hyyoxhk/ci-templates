@@ -139,3 +139,93 @@
     - aarch64
   before_script:
     - export ARCH="arm64v8/"
+
+
+# qemu container capable of running a VM to run the test suite
+#
+# To avoid rebuilding this image at every run, and to give better control,
+# QEMU_TAG needs to be set by the caller.
+.qemu:
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: bootstrapping_qemu
+  dependencies: []
+  before_script:
+  - export BUILDAH_RUN="buildah run --isolation chroot"
+  - export BUILDAH_COMMIT="buildah commit --format docker"
+
+  # login to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+  # check if our image is already in the current registry
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/qemu:$QEMU_TAG > /dev/null && exit 0 || true
+
+  script:
+  # https://gitlab.com/gitlab-com/support-forum/issues/4349
+  - export BUILDAH_FORMAT=docker
+
+  - buildcntr=$(buildah from $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG)
+  - $BUILDAH_RUN $buildcntr dnf upgrade -y
+
+  # install required packages:
+  # - qemu (of course)
+  # - genisoimage (to create a cloud-init iso that will help us filling in the custom parameters)
+  # - sshpass (when not using cloud-init, sshpass is a nice way to ssh with password on the CLI)
+  # - usbutils (for being able to call lsusb and redirect part a USB device)
+  - $BUILDAH_RUN $buildcntr dnf install -y qemu genisoimage sshpass usbutils
+
+  # do not store the packages database, it's pointless
+  - $BUILDAH_RUN $buildcntr dnf clean all
+
+  # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+  - export buildmnt=$(buildah mount $buildcntr)
+  - mkdir -p $buildmnt/app
+  - |
+    cat > $buildmnt/app/start_vm.sh <<EOF
+    #!/bin/bash
+
+    set -x
+    set -e
+
+    if [[ ! -e /app/image.raw ]]
+    then
+      xz -d /app/image.raw.xz
+    fi
+
+    if [[ ! -e ~/.ssh/id_rsa ]]
+    then
+      ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ''
+    fi
+
+    qemu-system-x86_64 -machine accel=kvm \\
+                       -smp 2 -m 1024 \\
+                       -drive format=raw,file=/app/image.raw \\
+                       -device virtio-net-pci,netdev=net0 \\
+                       -netdev user,id=net0,hostfwd=tcp::5555-:22 \\
+                       -display none \\
+                       -daemonize \\
+                       "\$@" \\
+                       -serial file:\$CI_BUILDS_DIR/\$CI_PROJECT_PATH/console.out
+
+    # store the host key locally
+    # note: we assume the root password is "root"
+    sshpass -p root ssh -o StrictHostKeyChecking=accept-new localhost -p 5555 uname -a
+
+    # store our ssh-key in the VM
+    sshpass -p root ssh-copy-id localhost -p 5555
+
+    EOF
+  - chmod +x $buildmnt/app/start_vm.sh
+
+  # tag the current container
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/qemu:$QEMU_TAG
+  # clean up the working container
+  - buildah rm $buildcntr
+
+  - podman images
+
+  # bug when pushing 2 tags in the same repo with the same base,
+  # this may fail. Just retry it after
+  - podman push $CI_REGISTRY_IMAGE/qemu:$QEMU_TAG || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/qemu:$QEMU_TAG
