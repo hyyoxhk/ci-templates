@@ -99,6 +99,137 @@
   - touch .success
 
 
+..fedora@qemu-template:
+  extends: ..fedora@container-template
+  tags:
+    - kvm
+  image: $CI_REGISTRY/wayland/ci-templates/qemu-mkosi-base:latest
+  script:
+  - *distro_vars
+
+  # start our current base Cloud image
+  - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
+
+  # install mkosi dependencies to build up our final VM image
+  - ssh cloud@localhost -p 5555 sudo dnf install -y mkosi systemd-container
+
+  # use the upstream mkosi code, to force keeping this particular release
+  - ssh cloud@localhost -p 5555 git clone -b v5 https://github.com/systemd/mkosi.git
+
+  - |
+    cat <<EOF > mkosi.default
+    [Distribution]
+    Distribution=fedora
+    Release=$FEDORA_VERSION
+
+    [Output]
+    Format=gpt_ext4
+    Bootable=yes
+    BootProtocols=bios
+    Password=root
+    KernelCommandLine=!* selinux=0 audit=0 rw console=tty0 console=ttyS0
+
+    [Partitions]
+    RootSize=2G
+
+    [Packages]
+    # The packages to appear in both the build and the final image
+    Packages=
+      openssh-clients
+      openssh-server
+      NetworkManager
+      iproute
+      iputils
+      git-core
+    EOF
+  - echo $FEDORA_RPMS | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+
+  # send the mkosi file to the VM
+  - scp -P 5555 mkosi.default cloud@localhost:mkosi.default
+
+  # create a cache folder (useful only when manually testing this script)
+  - ssh cloud@localhost -p 5555 mkdir mkosi.cache
+
+  # mkosi 5 doesn't honor Password from the configuration file
+  - ssh cloud@localhost -p 5555 sudo mkosi/mkosi --password root
+
+  # fetch the images
+  - scp -P 5555 cloud@localhost:image.raw dest-image.raw
+
+  # mount the root partition locally to extract the kernel and initramfs
+  - ssh cloud@localhost -p 5555 mkdir loop
+  - offset=$(fdisk -l dest-image.raw | grep image.raw2 | cut -d ' ' -f 3)
+  - ssh cloud@localhost -p 5555 sudo mount -o ro,loop,offset=$(($offset * 512)) image.raw loop/
+  - ssh cloud@localhost -p 5555 sudo cp loop/boot/vmlinuz* loop/boot/initramfs* .
+  - ssh cloud@localhost -p 5555 sudo umount loop/
+  - ssh cloud@localhost -p 5555 sudo chown cloud vmlinuz* initramfs*
+
+  - scp -P 5555 cloud@localhost:vmlinuz* .
+  - scp -P 5555 cloud@localhost:initramfs* .
+
+  # terminate qemu
+  - kill $(pgrep qemu)
+
+  # we did not tell mkosi to compress the image, we wanted to extract first
+  # the kernel and initrd
+  - xz dest-image.raw
+
+  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
+
+  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/qemu:latest}
+
+  - buildcntr=$(buildah from $QEMU_BASE_IMAGE)
+  - buildmnt=$(buildah mount $buildcntr)
+
+  # insert our final VM image we just built
+  - mkdir -p $buildmnt/app
+  - mv dest-image.raw.xz $buildmnt/app/image.raw.xz
+  - mv vmlinuz* initramfs-* $buildmnt/app/
+
+  - |
+    cat > $buildmnt/app/start_vm_kernel.sh <<EOF
+    #!/bin/bash
+
+    set -x
+
+    KERNEL=\$1
+    shift
+
+    set -e
+
+    if [[ x"\$KERNEL" == x"" ]]
+    then
+      KERNEL=\$(ls /app/vmlinuz* | sort | tail -1)
+    fi
+
+    INITRD=\$(ls /app/initram* | sort | tail -1)
+
+    bash /app/start_vm.sh -kernel \$KERNEL \\
+                          -initrd \$INITRD \\
+                          -append "root=/dev/sda2 selinux=0 audit=0 rw console=tty0 console=ttyS0" \\
+                          "\$@"
+
+    EOF
+  - chmod +x $buildmnt/app/start_vm_kernel.sh
+
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+    # There is a bug when pushing 2 tags in the same repo with the same base:
+    # this may fail. Just retry it after.
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+
+    # mark the current stage as successed, to get the result in after_script
+  - touch .success
+
+
 .after_script_template: &after_script_template
   after_script:
     # if we did not build, or if there was a failure, exit
@@ -126,6 +257,11 @@
     - aarch64
 
 
+.fedora@qemu-build:
+  extends: ..fedora@qemu-template
+  <<: *after_script_template
+
+
 .before_script_ifnot_exists: &before_script_ifnot_exists
   before_script:
     # log in to the registry
@@ -151,3 +287,8 @@
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
   tags:
     - aarch64
+
+
+.fedora@qemu-ifnot-exists:
+  extends: .fedora@qemu-build
+  <<: *before_script_ifnot_exists

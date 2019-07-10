@@ -37,14 +37,14 @@ variables:
 stages:
   - bootstrapping
   - bootstrapping_qemu
+  - fedora_container_build
+  - fedora_check
   - arch_container_build
   - arch_check
   - ubuntu_container_build
   - ubuntu_check
   - debian_container_build
   - debian_check
-  - fedora_container_build
-  - fedora_check
   - container_push
 
 
