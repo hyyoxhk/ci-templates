@@ -30,7 +30,7 @@ include:
 
 
 variables:
-  BOOTSTRAP_TAG: '2019-03-15.0'
+  BOOTSTRAP_TAG: '2019-07-10.0'
 
 
 stages:

@@ -41,7 +41,7 @@
   # https://gitlab.com/gitlab-com/support-forum/issues/4349
   - export BUILDAH_FORMAT=docker
 
-  - buildcntr=$(buildah from fedora:29)
+  - buildcntr=$(buildah from fedora:30)
   - buildah run $buildcntr dnf upgrade -y
   - buildah run $buildcntr dnf install -y buildah podman skopeo jq git
     # do not store the packages database, it's pointless
