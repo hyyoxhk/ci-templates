@@ -100,33 +100,42 @@
   - touch .success
 
 
+.after_script_template: &after_script_template
+  after_script:
+    # if we did not build, or if there was a failure, exit
+    # (the exit status does not matter here)
+    - if [[ ! -e .success ]] ;
+      then
+        exit 0;
+      fi
+
+    - *distro_vars
+
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+
+
 .arch@container-build:
   extends: ..arch@container-template
-  after_script:
-  # if we did not build, or if there was a failure, exit
-  # (the exit status does not matter here)
-  - if [[ ! -e .success ]] ;
-    then
-      exit 0;
-    fi
+  <<: *after_script_template
 
-  - *distro_vars
 
-  - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
-                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+.before_script_ifnot_exists: &before_script_ifnot_exists
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+    # check if our image is already in the current registry
+    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+
+    # copy the original image into the current project registry namespace
+    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
 
 
 .arch@container-ifnot-exists:
   extends: .arch@container-build
-  before_script:
-  # log in to the registry
-  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  <<: *before_script_ifnot_exists
 
-  - *distro_vars
-
-  # check if our image is already in the current registry
-  - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
-
-  # copy the original image into the current project registry namespace
-  - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
-                docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
