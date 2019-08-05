@@ -32,6 +32,7 @@
         export DISTRO_VERSION=$FEDORA_VERSION
         export DISTRO_EXEC=$FEDORA_EXEC
         export BUILDAH_RUN="buildah run --isolation chroot"
+        export BUILDAH_COMMIT="buildah commit --format docker"
 
 
 # Do not use this template directly, you can not reuse the produced image
@@ -83,7 +84,7 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - buildah commit $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
     # clean up the working container
   - buildah rm $buildcntr
 

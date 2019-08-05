@@ -19,6 +19,7 @@
   stage: bootstrapping
   before_script:
   - export BUILDAH_RUN="buildah run --isolation chroot"
+  - export BUILDAH_COMMIT="buildah commit --format docker"
   # install buildah and podman
   - pacman -S --refresh
   - pacman -S --noconfirm buildah podman
@@ -120,7 +121,7 @@
   - $BUILDAH_RUN $buildcntr podman images || true
 
   # tag the current container
-  - buildah commit --quiet $buildcntr $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   # clean up the working container
   - buildah rm $buildcntr
    
