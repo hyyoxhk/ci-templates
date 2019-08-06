@@ -31,7 +31,7 @@ include:
 
 variables:
   BOOTSTRAP_TAG: '2019-08-13.0'
-  QEMU_TAG: '2019-08-06.0'
+  QEMU_TAG: '2019-08-06.1'
 
 
 stages:
@@ -101,6 +101,7 @@ bootstrap-qemu-push@push:
 
     # push the container image to the registry
     - skopeo copy docker://$CI_REGISTRY_IMAGE/qemu:$QEMU_TAG docker://$CI_REGISTRY_IMAGE/qemu:latest
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/qemu-mkosi-base:$QEMU_TAG docker://$CI_REGISTRY_IMAGE/qemu-mkosi-base:latest
   variables:
     GIT_STRATEGY: none
   only:
