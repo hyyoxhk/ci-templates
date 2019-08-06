@@ -175,3 +175,16 @@
     REPO_SUFFIX: qemu-base
     FEDORA_RPMS: 'buildah podman skopeo jq git qemu genisoimage usbutils'
     FEDORA_EXEC: 'bootstrap/prep_qemu.sh'
+
+# qemu container capable of creating an other VM image
+#
+.qemu-mkosi:
+  extends: .qemu
+  tags:
+    - kvm
+  variables:
+    FEDORA_VERSION: '31'
+    FEDORA_TAG: $QEMU_TAG
+    REPO_SUFFIX: qemu-mkosi-base
+    FEDORA_RPMS: 'buildah podman skopeo jq git qemu genisoimage usbutils'
+    FEDORA_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'

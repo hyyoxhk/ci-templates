@@ -137,4 +137,4 @@ globals:
   bootstrap_tag: '2019-12-02'
 
   ## @qemu_tag: the current image tag associated with this qemu bootstrap image
-  qemu_tag: '2019-12-03'
+  qemu_tag: '2019-12-10'

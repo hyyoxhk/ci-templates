@@ -98,3 +98,11 @@ bootstrap-qemu:
   needs:
     - sanity check
     - bootstrap
+
+
+bootstrap-qemu-mkosi:
+  extends: .qemu-mkosi
+  needs:
+    - sanity check
+    - check commits
+    - bootstrap
