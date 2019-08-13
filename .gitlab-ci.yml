@@ -30,11 +30,10 @@ include:
 
 
 variables:
-  BOOTSTRAP_TAG: '2019-08-06.0'
+  BOOTSTRAP_TAG: '2019-08-13.0'
 
 
 stages:
-  - bootstrapping_check
   - bootstrapping
   - arch_container_build
   - arch_check
@@ -51,6 +50,10 @@ bootstrap:
   extends: .bootstrap
 
 
+bootstrap@arm64v8:
+  extends: .bootstrap@arm64v8
+
+
 #
 # Everything went fine if this is run, we can promote the latest bootstrap
 # tag as latest
@@ -63,6 +66,15 @@ bootstrap-push@push:
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
     # push the container image to the registry
-    - skopeo copy docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG docker://$CI_REGISTRY_IMAGE/buildah:latest
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:latest
   variables:
     GIT_STRATEGY: none
+
+
+bootstrap-push@arm64v8:
+  extends: bootstrap-push@push
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  before_script:
+    - export ARCH="arm64v8/"
+  tags:
+    - aarch64

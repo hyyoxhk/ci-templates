@@ -17,7 +17,7 @@
 .bootstrap:
   image: fedora:latest
   stage: bootstrapping
-  before_script:
+  script:
   - export BUILDAH_RUN="buildah run --isolation chroot"
   - export BUILDAH_COMMIT="buildah commit --format docker"
   # install buildah, podman and skopeo
@@ -39,11 +39,10 @@
   # check if our image is already in the current registry
   - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
 
-  script:
   # https://gitlab.com/gitlab-com/support-forum/issues/4349
   - export BUILDAH_FORMAT=docker
 
-  - buildcntr=$(buildah from fedora:30)
+  - buildcntr=$(buildah from ${ARCH}fedora:30)
   - $BUILDAH_RUN $buildcntr dnf upgrade -y
   - $BUILDAH_RUN $buildcntr dnf install -y buildah podman skopeo jq git
     # do not store the packages database, it's pointless
@@ -120,7 +119,7 @@
   - $BUILDAH_RUN $buildcntr podman images || true
 
   # tag the current container
-  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG
   # clean up the working container
   - buildah rm $buildcntr
    
@@ -128,6 +127,15 @@
 
   # bug when pushing 2 tags in the same repo with the same base,
   # this may fail. Just retry it after
-  - podman push $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  - podman push $CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG
+
+
+.bootstrap@arm64v8:
+  extends: .bootstrap
+  image: arm64v8/fedora:latest
+  tags:
+    - aarch64
+  before_script:
+    - export ARCH="arm64v8/"
