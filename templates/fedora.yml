@@ -119,6 +119,13 @@
   <<: *after_script_template
 
 
+.fedora@container-build@arm64v8:
+  extends: .fedora@container-build
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  tags:
+    - aarch64
+
+
 .before_script_ifnot_exists: &before_script_ifnot_exists
   before_script:
     # log in to the registry
@@ -138,3 +145,9 @@
   extends: .fedora@container-build
   <<: *before_script_ifnot_exists
 
+
+.fedora@container-ifnot-exists@arm64v8:
+  extends: .fedora@container-ifnot-exists
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  tags:
+    - aarch64

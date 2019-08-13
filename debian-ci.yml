@@ -27,6 +27,18 @@ variables:
   stage: debian_container_build
 
 
+.debian:ci@container-build@arm64v8:
+  extends: .debian@container-build@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: debian_container_build
+
+
+.debian:ci@container-ifnot-exists@arm64v8:
+  extends: .debian@container-ifnot-exists@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: debian_container_build
+
+
 #
 # generic debian checks
 #
@@ -56,6 +68,20 @@ debian:stretch@container-build:
 debian:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+
+
+debian:stretch@container-build@arm64v8:
+  extends: .debian:ci@container-build@arm64v8
+  variables:
+    DEBIAN_TAG: arm64v8-$CI_PIPELINE_ID
+    DEBIAN_VERSION: stretch
+
+
+debian:stretch@check@arm64v8:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/stretch:arm64v8-$CI_PIPELINE_ID
+  tags:
+    - aarch64
 
 
 #

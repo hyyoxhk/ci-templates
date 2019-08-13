@@ -27,6 +27,18 @@ variables:
   stage: ubuntu_container_build
 
 
+.ubuntu:ci@container-build@arm64v8:
+  extends: .ubuntu@container-build@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: ubuntu_container_build
+
+
+.ubuntu:ci@container-ifnot-exists@arm64v8:
+  extends: .ubuntu@container-ifnot-exists@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: ubuntu_container_build
+
+
 #
 # generic ubuntu checks
 #
@@ -56,6 +68,20 @@ ubuntu:18.10@container-build:
 ubuntu:18.10@check:
   extends: .ubuntu@check
   image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_ID
+
+
+ubuntu:18.10@container-build@arm64v8:
+  extends: .ubuntu:ci@container-build@arm64v8
+  variables:
+    UBUNTU_TAG: arm64v8-$CI_PIPELINE_ID
+    UBUNTU_VERSION: '18.10'
+
+
+ubuntu:18.10@check@arm64v8:
+  extends: .ubuntu@check
+  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:arm64v8-$CI_PIPELINE_ID
+  tags:
+    - aarch64
 
 
 #
