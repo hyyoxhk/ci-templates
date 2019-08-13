@@ -15,14 +15,13 @@
 # To avoid rebuilding this image at every run, and to give better control,
 # BOOTSTRAP_TAG needs to be set by the caller.
 .bootstrap:
-  image: archlinux/base:latest
+  image: fedora:latest
   stage: bootstrapping
   before_script:
   - export BUILDAH_RUN="buildah run --isolation chroot"
   - export BUILDAH_COMMIT="buildah commit --format docker"
-  # install buildah and podman
-  - pacman -S --refresh
-  - pacman -S --noconfirm buildah podman
+  # install buildah, podman and skopeo
+  - dnf install -y buildah podman skopeo
   - |
     cat > /etc/containers/storage.conf <<EOF
     [storage]
