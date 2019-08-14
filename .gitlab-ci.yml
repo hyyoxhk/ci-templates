@@ -69,6 +69,9 @@ bootstrap-push@push:
     - skopeo copy docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:latest
   variables:
     GIT_STRATEGY: none
+  only:
+    refs:
+      - master
 
 
 bootstrap-push@arm64v8:
@@ -78,3 +81,6 @@ bootstrap-push@arm64v8:
     - export ARCH="arm64v8/"
   tags:
     - aarch64
+  only:
+    refs:
+      - master
