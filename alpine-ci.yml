@@ -1,0 +1,99 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+variables:
+  ALPINE_PKGS: 'wget'
+  ALPINE_EXEC: '.hidden_dir/test.sh /test_file'
+
+
+################################################################################
+#
+# Alpine linux checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
+.alpine:ci@container-build:
+  extends: .alpine@container-build
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: alpine_container_build
+
+
+.alpine:ci@container-ifnot-exists:
+  extends: .alpine@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: alpine_container_build
+
+
+#
+# generic alpine checks
+#
+.alpine@check:
+  stage: alpine_check
+  script:
+      # make sure wget has been installed
+    - wget https://gitlab.freedesktop.org
+      # make sure our test script has been run
+    - if [[ -e /test_file ]] ;
+      then
+        echo $ALPINE_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+#
+# straight alpine build and test
+#
+alpine:latest@container-build:
+  extends: .alpine:ci@container-build
+  variables:
+    ALPINE_TAG: $CI_PIPELINE_ID
+
+
+alpine:latest@check:
+  extends: .alpine@check
+  image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_ID
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+alpine-forced:latest@container-ifnot-exists:
+  extends: .alpine:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    ALPINE_TAG: $CI_PIPELINE_IID
+
+
+alpine-forced-ifnot-exists:latest@check:
+  extends: .alpine@check
+  image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+alpine:latest@container-ifnot-exists:
+  extends: .alpine:ci@container-ifnot-exists
+  stage: alpine_check
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+    ALPINE_TAG: $CI_PIPELINE_IID
+    ALPINE_PKGS: 'this-package-should-not-exists'
+
+
+#
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+.alpine-upstream@container-ifnot-exists:
+  extends: .alpine:ci@container-ifnot-exists
+  stage: alpine_check
+  variables:
+    UPSTREAM_REPO: libinput/libinput
+    ALPINE_TAG: latest
+    ALPINE_PKGS: 'this-package-should-not-exists'

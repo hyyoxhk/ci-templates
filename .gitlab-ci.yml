@@ -28,6 +28,10 @@ include:
   - local: '/templates/ubuntu.yml'
   - local: '/ubuntu-ci.yml'
 
+  # Alpine linux container builder template
+  - local: '/templates/alpine.yml'
+  - local: '/alpine-ci.yml'
+
 
 variables:
   BOOTSTRAP_TAG: '2019-08-13.0'
@@ -35,6 +39,8 @@ variables:
 
 stages:
   - bootstrapping
+  - alpine_container_build
+  - alpine_check
   - arch_container_build
   - arch_check
   - ubuntu_container_build

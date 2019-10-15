@@ -1,0 +1,142 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+# This template will create a alpine image based on the following variables:
+#
+#  - ALPINE_PKGS:    if set, list of packages that needs to be installed
+#  - ALPINE_EXEC:    if set, this command will be run once the packages have
+#                    been installed
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
+#  - ALPINE_TAG:     tag to copy the image from the upstream registry. If the
+#                    tag does not exist, create a new build and tag it
+#
+# The resulting image will be pushed in the local registry, under:
+#     $CI_REGISTRY_IMAGE/alpine/latest:$ALPINE_TAG
+#
+# Two flavors of templates are available:
+#   - `.alpine@container-build`: this will force rebuild a new container
+#     and tag it with $ALPINE_TAG without checks
+#   - `.alpine@container-ifnot-exists`: this will rebuild a new container
+#     only if $ALPINE is not available in the local registry or
+#     in the $UPSTREAM_REPO registry
+
+# we can not reuse exported variables in after_script,
+# so have a common definition
+.alpine_vars: &distro_vars |
+        # exporting templates variables
+        # https://gitlab.com/gitlab-com/support-forum/issues/4349
+        export BUILDAH_FORMAT=docker
+        export DISTRO=alpine
+        export DISTRO_TAG=$ALPINE_TAG
+        export DISTRO_VERSION=latest
+        export DISTRO_EXEC=$ALPINE_EXEC
+        export BUILDAH_RUN="buildah run --isolation chroot"
+        export BUILDAH_COMMIT="buildah commit --format docker"
+
+
+# Do not use this template directly, you can not reuse the produced image
+# as it is tagged with $CI_JOB_ID
+..alpine@container-template:
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+  script:
+  - *distro_vars
+  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from alpine:latest
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from alpine:latest)
+  - buildmnt=$(buildah mount $buildcntr)
+  - $BUILDAH_RUN $buildcntr apk update
+  - $BUILDAH_RUN $buildcntr apk upgrade
+  - if [[ x"$ALPINE_PKGS" != x"" ]] ;
+    then
+      $BUILDAH_RUN $buildcntr apk add $ALPINE_PKGS ;
+    fi
+
+    # check if there is an optional post install script and run it.
+    # also, default image doesn't have bash
+  - if [[ x"$DISTRO_EXEC" != x"" ]] ;
+    then
+      $BUILDAH_RUN $buildcntr apk add bash ;
+      echo Running $DISTRO_EXEC ;
+      set -x ;
+      mkdir $buildmnt/tmp/clone ;
+      pushd $buildmnt/tmp/clone ;
+      git init ;
+      git remote add origin $CI_REPOSITORY_URL ;
+      git fetch --depth 1 origin $CI_COMMIT_SHA ;
+      git checkout FETCH_HEAD  > /dev/null;
+      buildah config --workingdir /tmp/clone $buildcntr ;
+      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      popd ;
+      rm -rf $buildmnt/tmp/clone ;
+      set +x ;
+    fi
+
+    # do not store the packages database, it's pointless
+  - rm -f $buildmnt/var/cache/apk/APKINDEX.*
+
+    # set up the working directory
+  - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+    # There is a bug when pushing 2 tags in the same repo with the same base:
+    # this may fail. Just retry it after.
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+
+    # mark the current stage as successed, to get the result in after_script
+  - touch .success
+
+
+.after_script_template: &after_script_template
+  after_script:
+    # if we did not build, or if there was a failure, exit
+    # (the exit status does not matter here)
+    - if [[ ! -e .success ]] ;
+      then
+        exit 0;
+      fi
+
+    - *distro_vars
+
+    - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+
+
+.alpine@container-build:
+  extends: ..alpine@container-template
+  <<: *after_script_template
+
+
+.before_script_ifnot_exists: &before_script_ifnot_exists
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+    # check if our image is already in the current registry
+    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+
+    # copy the original image into the current project registry namespace
+    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
+
+
+.alpine@container-ifnot-exists:
+  extends: .alpine@container-build
+  <<: *before_script_ifnot_exists
+
