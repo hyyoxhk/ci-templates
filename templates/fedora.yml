@@ -80,6 +80,7 @@
   - $BUILDAH_RUN $buildcntr dnf clean all
 
     # set up the working directory
+  - mkdir $buildmnt/app
   - buildah config --workingdir /app $buildcntr
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr

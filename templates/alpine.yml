@@ -82,6 +82,7 @@
   - rm -f $buildmnt/var/cache/apk/APKINDEX.*
 
     # set up the working directory
+  - mkdir $buildmnt/app
   - buildah config --workingdir /app $buildcntr
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
