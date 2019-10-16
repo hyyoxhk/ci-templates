@@ -131,7 +131,7 @@ fedora:rawhide@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-fedora:29-upstream@container-ifnot-exists:
+.fedora:29-upstream@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
