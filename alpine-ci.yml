@@ -27,6 +27,18 @@ variables:
   stage: alpine_container_build
 
 
+.alpine:ci@container-build@arm64v8:
+  extends: .alpine@container-build@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: alpine_container_build
+
+
+.alpine:ci@container-ifnot-exists@arm64v8:
+  extends: .alpine@container-ifnot-exists@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: alpine_container_build
+
+
 #
 # generic alpine checks
 #
@@ -52,10 +64,22 @@ alpine:latest@container-build:
   variables:
     ALPINE_TAG: $CI_PIPELINE_ID
 
-
 alpine:latest@check:
   extends: .alpine@check
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_ID
+
+
+alpine:latest@container-build@arm64v8:
+  extends: .alpine:ci@container-build@arm64v8
+  variables:
+    ALPINE_TAG: arm64v8-$CI_PIPELINE_ID
+
+
+alpine:latest@@check@arm64v8:
+  extends: .alpine@check
+  image: $CI_REGISTRY_IMAGE/alpine/latest:arm64v8-$CI_PIPELINE_ID
+  tags:
+    - aarch64
 
 
 #
