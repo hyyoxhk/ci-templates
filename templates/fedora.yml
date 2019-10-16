@@ -35,9 +35,7 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-# Do not use this template directly, you can not reuse the produced image
-# as it is tagged with $CI_JOB_ID
-..fedora@container-template:
+.fedora@container-build:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
   stage: build
   before_script:
@@ -48,6 +46,11 @@
 
   script:
   - *distro_vars
+  - if [[ x"$DISTRO_TAG" == x"" ]] ;
+    then
+      echo $DISTRO tag missing;
+      exit 1;
+    fi
   - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
@@ -85,39 +88,16 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
     # clean up the working container
   - buildah rm $buildcntr
 
     # push the container image to the registry
     # There is a bug when pushing 2 tags in the same repo with the same base:
     # this may fail. Just retry it after.
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
-
-    # mark the current stage as successed, to get the result in after_script
-  - touch .success
-
-
-.after_script_template: &after_script_template
-  after_script:
-    # if we did not build, or if there was a failure, exit
-    # (the exit status does not matter here)
-    - if [[ ! -e .success ]] ;
-      then
-        exit 0;
-      fi
-
-    - *distro_vars
-
-    - skopeo copy docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$CI_JOB_ID
-                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
-
-
-.fedora@container-build:
-  extends: ..fedora@container-template
-  <<: *after_script_template
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
 
 
 .fedora@container-build@arm64v8:
