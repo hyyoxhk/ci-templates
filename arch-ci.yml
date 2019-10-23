@@ -82,7 +82,7 @@ arch@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: wayland/ci-templates
     ARCH_TAG: $CI_PIPELINE_IID
-    ARCH_PKGS: 'this-package-should-not-exists'
+    ARCH_PKGS: 'this-package-should-not-exist'
 
 
 #
@@ -96,4 +96,4 @@ arch@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: libinput/libinput
     ARCH_TAG: latest
-    ARCH_PKGS: 'this-package-should-not-exists'
+    ARCH_PKGS: 'this-package-should-not-exist'

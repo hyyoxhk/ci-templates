@@ -109,7 +109,7 @@ ubuntu:18.10@container-ifnot-exists:
     UPSTREAM_REPO: wayland/ci-templates
     UBUNTU_VERSION: '18.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
-    UBUNTU_DEBS: 'this-package-should-not-exists'
+    UBUNTU_DEBS: 'this-package-should-not-exist'
 
 
 #
@@ -124,7 +124,7 @@ ubuntu:18.10@container-ifnot-exists:
     UPSTREAM_REPO: FIXME
     UBUNTU_VERSION: '18.10'
     UBUNTU_TAG: latest
-    UBUNTU_DEBS: 'this-package-should-not-exists'
+    UBUNTU_DEBS: 'this-package-should-not-exist'
 
 
 #

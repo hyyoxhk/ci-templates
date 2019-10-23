@@ -109,7 +109,7 @@ debian:stretch@container-ifnot-exists:
     UPSTREAM_REPO: wayland/ci-templates
     DEBIAN_VERSION: stretch
     DEBIAN_TAG: $CI_PIPELINE_IID
-    DEBIAN_DEBS: 'this-package-should-not-exists'
+    DEBIAN_DEBS: 'this-package-should-not-exist'
 
 
 #
@@ -124,7 +124,7 @@ debian:stretch@container-ifnot-exists:
     UPSTREAM_REPO: FIXME
     DEBIAN_VERSION: stretch
     DEBIAN_TAG: latest
-    DEBIAN_DEBS: 'this-package-should-not-exists'
+    DEBIAN_DEBS: 'this-package-should-not-exist'
 
 
 #

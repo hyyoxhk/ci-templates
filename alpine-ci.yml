@@ -106,7 +106,7 @@ alpine:latest@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: wayland/ci-templates
     ALPINE_TAG: $CI_PIPELINE_IID
-    ALPINE_PKGS: 'this-package-should-not-exists'
+    ALPINE_PKGS: 'this-package-should-not-exist'
 
 
 #
@@ -120,4 +120,4 @@ alpine:latest@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: libinput/libinput
     ALPINE_TAG: latest
-    ALPINE_PKGS: 'this-package-should-not-exists'
+    ALPINE_PKGS: 'this-package-should-not-exist'
