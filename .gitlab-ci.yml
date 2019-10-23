@@ -32,6 +32,9 @@ include:
   - local: '/templates/alpine.yml'
   - local: '/alpine-ci.yml'
 
+  # Centos linux container builder template
+  - local: '/templates/centos.yml'
+  - local: '/centos-ci.yml'
 
 variables:
   BOOTSTRAP_TAG: '2019-08-13.0'
@@ -43,6 +46,8 @@ stages:
   - alpine_check
   - arch_container_build
   - arch_check
+  - centos_container_build
+  - centos_check
   - ubuntu_container_build
   - ubuntu_check
   - debian_container_build

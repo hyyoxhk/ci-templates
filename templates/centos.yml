@@ -1,0 +1,122 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+# This template will create a centos image based on the following variables:
+#
+#  - CENTOS_VERSION: the centos version (7.7, 8.0, etc...)
+#  - CENTOS_RPMS:    if set, list of packages that needs to be installed
+#  - CENTOS_EXEC:    if set, this command will be run once the packages have
+#                    been installed
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
+#  - CENTOS_TAG:     tag to copy the image from the upstream registry. If the
+#                    tag does not exist, create a new build and tag it
+#
+# The resulting image will be pushed in the local registry, under:
+#     $CI_REGISTRY_IMAGE/centos/$CENTOS_VERSION:$CENTOS_TAG
+#
+# Two flavors of templates are available:
+#   - `.centos@container-build`: this will force rebuild a new container
+#     and tag it with $CENTOS_TAG without checks
+#   - `.centos@container-ifnot-exists`: this will rebuild a new container
+#     only if $CENTOS is not available in the local registry or
+#     in the $UPSTREAM_REPO registry
+
+# we can not reuse exported variables in after_script,
+# so have a common definition
+.centos_vars: &distro_vars |
+        # exporting templates variables
+        # https://gitlab.com/gitlab-com/support-forum/issues/4349
+        export BUILDAH_FORMAT=docker
+        export DISTRO=centos
+        export DISTRO_TAG=$CENTOS_TAG
+        export DISTRO_VERSION=$CENTOS_VERSION
+        export DISTRO_EXEC=$CENTOS_EXEC
+        export BUILDAH_RUN="buildah run --isolation chroot"
+        export BUILDAH_COMMIT="buildah commit --format docker"
+
+
+.centos@container-build:
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  stage: build
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+  script:
+  - *distro_vars
+  - if [[ x"$DISTRO_TAG" == x"" ]] ;
+    then
+      echo $DISTRO tag missing;
+      exit 1;
+    fi
+  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
+    # initial set up: take the base image, update it and install the packages
+  - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
+  - buildmnt=$(buildah mount $buildcntr)
+  - $BUILDAH_RUN $buildcntr dnf --help >/dev/null 2>&1 && DNF=dnf || DNF=yum
+  - $BUILDAH_RUN $buildcntr $DNF upgrade -y
+  - if [[ x"$CENTOS_RPMS" != x"" ]] ;
+    then
+      $BUILDAH_RUN $buildcntr $DNF install -y $CENTOS_RPMS ;
+    fi
+
+    # check if there is an optional post install script and run it
+  - if [[ x"$DISTRO_EXEC" != x"" ]] ;
+    then
+      echo Running $DISTRO_EXEC ;
+      set -x ;
+      mkdir $buildmnt/tmp/clone ;
+      pushd $buildmnt/tmp/clone ;
+      git init ;
+      git remote add origin $CI_REPOSITORY_URL ;
+      git fetch --depth 1 origin $CI_COMMIT_SHA ;
+      git checkout FETCH_HEAD  > /dev/null;
+      buildah config --workingdir /tmp/clone $buildcntr ;
+      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      popd ;
+      rm -rf $buildmnt/tmp/clone ;
+      set +x ;
+    fi
+
+    # do not store the packages database, it's pointless
+  - $BUILDAH_RUN $buildcntr $DNF clean all
+
+    # set up the working directory
+  - mkdir $buildmnt/app
+  - buildah config --workingdir /app $buildcntr
+    # umount the container, not required, but, heh
+  - buildah unmount $buildcntr
+    # tag the current container
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+    # clean up the working container
+  - buildah rm $buildcntr
+
+    # push the container image to the registry
+    # There is a bug when pushing 2 tags in the same repo with the same base:
+    # this may fail. Just retry it after.
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+
+
+.before_script_ifnot_exists: &before_script_ifnot_exists
+  before_script:
+    # log in to the registry
+    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    - *distro_vars
+
+    # check if our image is already in the current registry
+    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+
+    # copy the original image into the current project registry namespace
+    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
+
+
+.centos@container-ifnot-exists:
+  extends: .centos@container-build
+  <<: *before_script_ifnot_exists
+
