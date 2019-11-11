@@ -8,11 +8,14 @@
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
+#  - REPO_SUFFIX:    The repository name suffix after ".../fedora/".
+#                    If this variable isn't defined, $FEDORA_VERSION is used for
+#                    the suffix.
 #  - FEDORA_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/fedora/$FEDORA_VERSION:$FEDORA_TAG
+#     $CI_REGISTRY_IMAGE/fedora/$REPO_SUFFIX:$FEDORA_TAG
 #
 # Two flavors of templates are available:
 #   - `.fedora@container-build`: this will force rebuild a new container
@@ -31,6 +34,10 @@
         export DISTRO_TAG=$FEDORA_TAG
         export DISTRO_VERSION=$FEDORA_VERSION
         export DISTRO_EXEC=$FEDORA_EXEC
+        if [ x"$REPO_SUFFIX" == x"" ] ;
+        then
+                export REPO_SUFFIX=$DISTRO_VERSION
+        fi
         export BUILDAH_RUN="buildah run --isolation chroot"
         export BUILDAH_COMMIT="buildah commit --format docker"
 
@@ -51,7 +58,7 @@
       echo $DISTRO tag missing;
       exit 1;
     fi
-  - echo Building $DISTRO/$DISTRO_VERSION:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
+  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
@@ -88,16 +95,16 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
     # clean up the working container
   - buildah rm $buildcntr
 
     # push the container image to the registry
     # There is a bug when pushing 2 tags in the same repo with the same base:
     # this may fail. Just retry it after.
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
 
 
 .fedora@container-build@arm64v8:
@@ -115,11 +122,11 @@
     - *distro_vars
 
     # check if our image is already in the current registry
-    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG > /dev/null && exit 0 || true
+    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG > /dev/null && exit 0 || true
 
     # copy the original image into the current project registry namespace
-    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG
-                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$DISTRO_VERSION:$DISTRO_TAG && exit 0 || true
+    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG && exit 0 || true
 
 
 .fedora@container-ifnot-exists:
