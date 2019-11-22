@@ -72,7 +72,7 @@
 
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
-  - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
+  - if [[ x"$UBUNTU_DEBS" != x"" ]] ;
     then
       $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS ;
     fi
