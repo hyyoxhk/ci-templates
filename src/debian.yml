@@ -1,0 +1,25 @@
+debian:
+  distribution: debian
+  package_type: debs
+  version_examples: stretch, sid
+
+  prepare:
+    - cat /etc/apt/sources.list
+    - echo 'path-exclude=/usr/share/doc/*' > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+    - echo 'path-exclude=/usr/share/locale/*' >> /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+    - echo 'path-exclude=/usr/share/man/*' >> /etc/dpkg/dpkg.cfg.d/99-exclude-cruft
+    - echo 'APT::Install-Recommends "false";' > /etc/apt/apt.conf
+    - echo '#!/bin/sh' > /usr/sbin/policy-rc.d
+    - echo 'exit 101' >> /usr/sbin/policy-rc.d
+    - chmod +x /usr/sbin/policy-rc.d
+
+  upgrade:
+    - env DEBIAN_FRONTEND=noninteractive apt-get update
+    - env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+
+  install:
+    - env DEBIAN_FRONTEND=noninteractive apt-get -y install
+
+  clean:
+    - env DEBIAN_FRONTEND=noninteractive apt-get clean
+    - rm -f /var/lib/apt/lists/*.lz4

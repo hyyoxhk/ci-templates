@@ -9,7 +9,7 @@
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../ubuntu/".
-#                    If this variable isn't defined, $UBUNTU_VERSION is used for
+#                    If this variable isn't defined, "$UBUNTU_VERSION" is used for
 #                    the suffix.
 #  - UBUNTU_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
@@ -62,6 +62,7 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
+
   - echo 'path-exclude=/usr/share/doc/*' > $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
   - echo 'path-exclude=/usr/share/locale/*' >> $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
   - echo 'path-exclude=/usr/share/man/*' >> $buildmnt/etc/dpkg/dpkg.cfg.d/99-exclude-cruft
@@ -72,6 +73,7 @@
 
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+
   - if [[ x"$UBUNTU_DEBS" != x"" ]] ;
     then
       $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get install -y $UBUNTU_DEBS ;
@@ -97,7 +99,7 @@
 
     # do not store the packages database, it's pointless
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get clean
-  - rm -f $buildmnt/var/lib/apt/lists/*.lz4
+  - $BUILDAH_RUN $buildcntr rm -f /var/lib/apt/lists/*.lz4
 
     # set up the working directory
   - mkdir $buildmnt/app
@@ -115,7 +117,6 @@
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-
 
 .ubuntu@container-build@arm64v8:
   extends: .ubuntu@container-build

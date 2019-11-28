@@ -1,0 +1,16 @@
+alpine:
+  distribution: alpine
+  package_type: pkgs
+  version: latest
+
+  upgrade:
+    - apk update
+    - apk upgrade
+      # also, default image doesn't have bash
+    - apk add bash
+
+  install:
+    - apk add
+
+  clean:
+    - rm -f /var/cache/apk/APKINDEX.*

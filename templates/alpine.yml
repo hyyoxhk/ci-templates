@@ -5,11 +5,11 @@
 #  - ALPINE_PKGS:    if set, list of packages that needs to be installed
 #  - ALPINE_EXEC:    if set, this command will be run once the packages have
 #                    been installed
+#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
+#                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../alpine/".
 #                    If this variable isn't defined, "latest" is used for
 #                    the suffix.
-#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
-#                    find the given tag (for example: `wayland/weston`)
 #  - ALPINE_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
@@ -20,7 +20,7 @@
 #   - `.alpine@container-build`: this will force rebuild a new container
 #     and tag it with $ALPINE_TAG without checks
 #   - `.alpine@container-ifnot-exists`: this will rebuild a new container
-#     only if $ALPINE is not available in the local registry or
+#     only if $ALPINE_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
 # we can not reuse exported variables in after_script,
@@ -61,18 +61,19 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from alpine:latest)
   - buildmnt=$(buildah mount $buildcntr)
+
   - $BUILDAH_RUN $buildcntr apk update
   - $BUILDAH_RUN $buildcntr apk upgrade
+  - $BUILDAH_RUN $buildcntr apk add bash
+
   - if [[ x"$ALPINE_PKGS" != x"" ]] ;
     then
       $BUILDAH_RUN $buildcntr apk add $ALPINE_PKGS ;
     fi
 
-    # check if there is an optional post install script and run it.
-    # also, default image doesn't have bash
+    # check if there is an optional post install script and run it
   - if [[ x"$DISTRO_EXEC" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr apk add bash ;
       echo Running $DISTRO_EXEC ;
       set -x ;
       mkdir $buildmnt/tmp/clone ;
@@ -89,7 +90,7 @@
     fi
 
     # do not store the packages database, it's pointless
-  - rm -f $buildmnt/var/cache/apk/APKINDEX.*
+  - $BUILDAH_RUN $buildcntr rm -f /var/cache/apk/APKINDEX.*
 
     # set up the working directory
   - mkdir $buildmnt/app
@@ -107,7 +108,6 @@
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-
 
 .alpine@container-build@arm64v8:
   extends: .alpine@container-build

@@ -1,39 +1,41 @@
 # vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
 
-# This template will create a centos image based on the following variables:
+# This template will create a {{distribution}} image based on the following variables:
 #
-#  - CENTOS_VERSION: the centos version (7.7, 8.0, etc...)
-#  - CENTOS_RPMS:    if set, list of packages that needs to be installed
-#  - CENTOS_EXEC:    if set, this command will be run once the packages have
+{% if not version %}
+#  - {{DISTRIBUTION}}_VERSION: the {{distribution}} version ({{version_examples}}, etc...)
+{% endif %}
+#  - {{PACKAGES}}:    if set, list of packages that needs to be installed
+#  - {{DISTRIBUTION}}_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
-#  - REPO_SUFFIX:    The repository name suffix after ".../centos/".
-#                    If this variable isn't defined, "$CENTOS_VERSION" is used for
+#  - REPO_SUFFIX:    The repository name suffix after ".../{{docker_repo}}/".
+#                    If this variable isn't defined, "{{VERSION}}" is used for
 #                    the suffix.
-#  - CENTOS_TAG:     tag to copy the image from the upstream registry. If the
+#  - {{DISTRIBUTION}}_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/centos/$REPO_SUFFIX:$CENTOS_TAG
+#     $CI_REGISTRY_IMAGE/{{docker_repo}}/$REPO_SUFFIX:${{DISTRIBUTION}}_TAG
 #
 # Two flavors of templates are available:
-#   - `.centos@container-build`: this will force rebuild a new container
-#     and tag it with $CENTOS_TAG without checks
-#   - `.centos@container-ifnot-exists`: this will rebuild a new container
-#     only if $CENTOS_TAG is not available in the local registry or
+#   - `.{{distribution}}@container-build`: this will force rebuild a new container
+#     and tag it with ${{DISTRIBUTION}}_TAG without checks
+#   - `.{{distribution}}@container-ifnot-exists`: this will rebuild a new container
+#     only if ${{DISTRIBUTION}}_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
 # we can not reuse exported variables in after_script,
 # so have a common definition
-.centos_vars: &distro_vars |
+.{{distribution}}_vars: &distro_vars |
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
-        export DISTRO=centos
-        export DISTRO_TAG=$CENTOS_TAG
-        export DISTRO_VERSION=$CENTOS_VERSION
-        export DISTRO_EXEC=$CENTOS_EXEC
+        export DISTRO={{docker_repo}}
+        export DISTRO_TAG=${{DISTRIBUTION}}_TAG
+        export DISTRO_VERSION={{VERSION}}
+        export DISTRO_EXEC=${{DISTRIBUTION}}_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
         then
                 export REPO_SUFFIX=$DISTRO_VERSION
@@ -42,7 +44,7 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-.centos@container-build:
+.{{distribution}}@container-build:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
   stage: build
   before_script:
@@ -58,17 +60,26 @@
       echo $DISTRO tag missing;
       exit 1;
     fi
-  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $DISTRO:$DISTRO_VERSION
+  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from {{ image }}
     # initial set up: take the base image, update it and install the packages
-  - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
+  - buildcntr=$(buildah from {{ image }})
   - buildmnt=$(buildah mount $buildcntr)
 
-  - $BUILDAH_RUN $buildcntr dnf --help >/dev/null 2>&1 && DNF=dnf || DNF=yum
-  - $BUILDAH_RUN $buildcntr $DNF upgrade -y
+    {% if prepare %}
+      {% for command in prepare %}
+  - {{command.replace(" /", " $buildmnt/")}}
+      {% endfor %}
 
-  - if [[ x"$CENTOS_RPMS" != x"" ]] ;
+    {% endif %}
+    {% for command in upgrade %}
+  - $BUILDAH_RUN $buildcntr {{command}}
+    {% endfor %}
+
+  - if [[ x"${{PACKAGES}}" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr $DNF install -y $CENTOS_RPMS ;
+      {% for command in install %}
+      $BUILDAH_RUN $buildcntr {{command}} ${{PACKAGES}} ;
+      {% endfor %}
     fi
 
     # check if there is an optional post install script and run it
@@ -90,7 +101,9 @@
     fi
 
     # do not store the packages database, it's pointless
-  - $BUILDAH_RUN $buildcntr $DNF clean all
+    {% for command in clean %}
+  - $BUILDAH_RUN $buildcntr {{command}}
+    {% endfor %}
 
     # set up the working directory
   - mkdir $buildmnt/app
@@ -108,6 +121,14 @@
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+{% if aarch64 %}
+
+.{{distribution}}@container-build@arm64v8:
+  extends: .{{distribution}}@container-build
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  tags:
+    - aarch64
+{% endif %}
 
 
 .before_script_ifnot_exists: &before_script_ifnot_exists
@@ -125,6 +146,15 @@
                   docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG && exit 0 || true
 
 
-.centos@container-ifnot-exists:
-  extends: .centos@container-build
+.{{distribution}}@container-ifnot-exists:
+  extends: .{{distribution}}@container-build
   <<: *before_script_ifnot_exists
+{% if aarch64 %}
+
+
+.{{distribution}}@container-ifnot-exists@arm64v8:
+  extends: .{{distribution}}@container-ifnot-exists
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  tags:
+    - aarch64
+{% endif %}

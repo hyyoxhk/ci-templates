@@ -1,0 +1,14 @@
+fedora:
+  distribution: fedora
+  package_type: rpms
+  version_examples: 28, 29, rawhide
+
+  upgrade:
+    - dnf upgrade -y
+
+  install:
+    - dnf install -y
+
+  clean:
+    - dnf clean all
+

@@ -9,7 +9,7 @@
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../fedora/".
-#                    If this variable isn't defined, $FEDORA_VERSION is used for
+#                    If this variable isn't defined, "$FEDORA_VERSION" is used for
 #                    the suffix.
 #  - FEDORA_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
@@ -21,7 +21,7 @@
 #   - `.fedora@container-build`: this will force rebuild a new container
 #     and tag it with $FEDORA_TAG without checks
 #   - `.fedora@container-ifnot-exists`: this will rebuild a new container
-#     only if $FEDORA is not available in the local registry or
+#     only if $FEDORA_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
 # we can not reuse exported variables in after_script,
@@ -62,7 +62,9 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
+
   - $BUILDAH_RUN $buildcntr dnf upgrade -y
+
   - if [[ x"$FEDORA_RPMS" != x"" ]] ;
     then
       $BUILDAH_RUN $buildcntr dnf install -y $FEDORA_RPMS ;
@@ -105,7 +107,6 @@
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-
 
 .fedora@container-build@arm64v8:
   extends: .fedora@container-build

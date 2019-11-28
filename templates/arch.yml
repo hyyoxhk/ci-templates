@@ -11,7 +11,7 @@
 #                    If this variable isn't defined, "rolling" is used for
 #                    the suffix.
 #  - ARCH_TAG:     tag to copy the image from the upstream registry. If the
-#                  tag does not exist, create a new build and tag it
+#                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
 #     $CI_REGISTRY_IMAGE/archlinux/$REPO_SUFFIX:$ARCH_TAG
@@ -20,7 +20,7 @@
 #   - `.arch@container-build`: this will force rebuild a new container
 #     and tag it with $ARCH_TAG without checks
 #   - `.arch@container-ifnot-exists`: this will rebuild a new container
-#     only if $ARCH is not available in the local registry or
+#     only if $ARCH_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
 # we can not reuse exported variables in after_script,
@@ -61,8 +61,10 @@
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from archlinux/base)
   - buildmnt=$(buildah mount $buildcntr)
+
   - $BUILDAH_RUN $buildcntr pacman -S --refresh
   - $BUILDAH_RUN $buildcntr pacman -S --sysupgrade --noconfirm
+
   - if [[ x"$ARCH_PKGS" != x"" ]] ;
     then
       $BUILDAH_RUN $buildcntr pacman -S --noconfirm $ARCH_PKGS ;
@@ -86,9 +88,8 @@
       set +x ;
     fi
 
-    # in case it doesn't exist yet, otherwise pacman clean fails
-  - $BUILDAH_RUN $buildcntr mkdir -p /var/cache/pacman/pkg
     # do not store the packages database, it's pointless
+  - $BUILDAH_RUN $buildcntr mkdir -p /var/cache/pacman/pkg
   - $BUILDAH_RUN $buildcntr pacman -S --clean --noconfirm
 
     # set up the working directory
@@ -127,4 +128,3 @@
 .arch@container-ifnot-exists:
   extends: .arch@container-build
   <<: *before_script_ifnot_exists
-

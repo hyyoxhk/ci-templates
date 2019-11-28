@@ -1,0 +1,20 @@
+arch:
+  distribution: arch
+  image: archlinux/base
+  package_type: pkgs
+  version: rolling
+
+  upgrade:
+    - pacman -S --refresh
+    - pacman -S --sysupgrade --noconfirm
+
+  install:
+    - pacman -S --noconfirm
+
+  clean:
+    # in case it doesn't exist yet, otherwise pacman clean fails
+    - mkdir -p /var/cache/pacman/pkg
+    - pacman -S --clean --noconfirm
+
+  aarch64: false
+
