@@ -41,6 +41,7 @@ variables:
 
 
 stages:
+  - sanity check
   - bootstrapping
   - alpine_container_build
   - alpine_check
@@ -56,6 +57,24 @@ stages:
   - fedora_check
   - container_push
 
+
+#
+# We want those to fail as early as possible, so we are reusing the current
+# wayland/ci-templates/buildah:latest image
+#
+sanity check:
+  stage: sanity check
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  script:
+    - pip3 install --user jinja2 PyYAML
+    - python3 ./src/generate_templates.py
+
+    - git diff --exit-code && exit 0 || true
+
+    - echo "some files were not generated through 'src/generate_templates.py' or
+      have not been committed. Please edit the files under 'src', run
+      'src/generate_template.py' and then commit the result"
+    - exit 1
 
 bootstrap:
   extends: .bootstrap
