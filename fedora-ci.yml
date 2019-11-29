@@ -19,24 +19,32 @@ variables:
   extends: .fedora@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
+  needs:
+    - "bootstrap"
 
 
 .fedora:ci@container-ifnot-exists:
   extends: .fedora@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
+  needs:
+    - "bootstrap"
 
 
 .fedora:ci@container-build@arm64v8:
   extends: .fedora@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 
 .fedora:ci@container-ifnot-exists@arm64v8:
   extends: .fedora@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 #
 # generic fedora checks
@@ -68,6 +76,8 @@ fedora:30@container-build:
 fedora:30@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_ID
+  needs:
+    - fedora:30@container-build
 
 
 fedora:30@container-build@arm64v8:
@@ -82,6 +92,8 @@ fedora:30@check@arm64v8:
   image: $CI_REGISTRY_IMAGE/fedora/30:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
+  needs:
+    - fedora:30@container-build@arm64v8
 
 
 #
@@ -98,6 +110,8 @@ fedora-forced:30@container-ifnot-exists:
 fedora-forced-ifnot-exists:30@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_IID
+  needs:
+    - fedora-forced:30@container-ifnot-exists
 
 
 #
@@ -111,6 +125,8 @@ fedora:30@container-ifnot-exists:
     FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exist'
+  needs:
+    - fedora-forced:30@container-ifnot-exists
 
 
 #
@@ -141,6 +157,8 @@ fedora:29@container-build:
 fedora:29@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
+  needs:
+    - fedora:29@container-build
 
 fedora:rawhide@container-build:
   extends: .fedora:ci@container-build
@@ -151,3 +169,5 @@ fedora:rawhide@container-build:
 fedora:rawhide@check:
   extends: .fedora@check
   image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID
+  needs:
+    - fedora:rawhide@container-build

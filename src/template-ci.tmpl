@@ -23,12 +23,16 @@ variables:
   extends: .{{distribution}}@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
+  needs:
+    - "bootstrap"
 
 
 .{{distribution}}:ci@container-ifnot-exists:
   extends: .{{distribution}}@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
+  needs:
+    - "bootstrap"
 
 {% if aarch64 %}
 
@@ -36,12 +40,16 @@ variables:
   extends: .{{distribution}}@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 
 .{{distribution}}:ci@container-ifnot-exists@arm64v8:
   extends: .{{distribution}}@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
+  needs:
+    - "bootstrap@arm64v8"
 {% endif %}
 
 #
@@ -83,6 +91,8 @@ variables:
 {{distribution}}:{{ versions[0] }}@check:
   extends: .{{distribution}}@check
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_ID
+  needs:
+    - {{distribution}}:{{ versions[0] }}@container-build
 {% if aarch64 %}
 
 
@@ -100,6 +110,8 @@ variables:
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
+  needs:
+    - {{distribution}}:{{ versions[0] }}@container-build@arm64v8
 {% endif %}
 
 
@@ -119,6 +131,8 @@ variables:
 {{distribution}}-forced-ifnot-exists:{{ versions[0] }}@check:
   extends: .{{distribution}}@check
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_IID
+  needs:
+    - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
 
 
 #
@@ -134,6 +148,8 @@ variables:
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
     {{ PACKAGES }}: 'this-package-should-not-exist'
+  needs:
+    - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
 
 
 #
@@ -168,5 +184,7 @@ variables:
 {{distribution}}:{{v}}@check:
   extends: .{{distribution}}@check
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{v}}:$CI_PIPELINE_ID
+  needs:
+    - {{distribution}}:{{v}}@container-build
 {% endfor %}
 {% endif %}

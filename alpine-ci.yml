@@ -19,24 +19,32 @@ variables:
   extends: .alpine@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
+  needs:
+    - "bootstrap"
 
 
 .alpine:ci@container-ifnot-exists:
   extends: .alpine@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
+  needs:
+    - "bootstrap"
 
 
 .alpine:ci@container-build@arm64v8:
   extends: .alpine@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 
 .alpine:ci@container-ifnot-exists@arm64v8:
   extends: .alpine@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 #
 # generic alpine checks
@@ -67,6 +75,8 @@ alpine:latest@container-build:
 alpine:latest@check:
   extends: .alpine@check
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_ID
+  needs:
+    - alpine:latest@container-build
 
 
 alpine:latest@container-build@arm64v8:
@@ -80,6 +90,8 @@ alpine:latest@check@arm64v8:
   image: $CI_REGISTRY_IMAGE/alpine/latest:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
+  needs:
+    - alpine:latest@container-build@arm64v8
 
 
 #
@@ -95,6 +107,8 @@ alpine-forced:latest@container-ifnot-exists:
 alpine-forced-ifnot-exists:latest@check:
   extends: .alpine@check
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_IID
+  needs:
+    - alpine-forced:latest@container-ifnot-exists
 
 
 #
@@ -107,6 +121,8 @@ alpine:latest@container-ifnot-exists:
     UPSTREAM_REPO: wayland/ci-templates
     ALPINE_TAG: $CI_PIPELINE_IID
     ALPINE_PKGS: 'this-package-should-not-exist'
+  needs:
+    - alpine-forced:latest@container-ifnot-exists
 
 
 #

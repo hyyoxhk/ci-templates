@@ -19,12 +19,16 @@ variables:
   extends: .arch@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
+  needs:
+    - "bootstrap"
 
 
 .arch:ci@container-ifnot-exists:
   extends: .arch@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
+  needs:
+    - "bootstrap"
 
 
 #
@@ -56,6 +60,8 @@ arch:rolling@container-build:
 arch:rolling@check:
   extends: .arch@check
   image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_ID
+  needs:
+    - arch:rolling@container-build
 
 
 #
@@ -71,6 +77,8 @@ arch-forced:rolling@container-ifnot-exists:
 arch-forced-ifnot-exists:rolling@check:
   extends: .arch@check
   image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_IID
+  needs:
+    - arch-forced:rolling@container-ifnot-exists
 
 
 #
@@ -83,6 +91,8 @@ arch:rolling@container-ifnot-exists:
     UPSTREAM_REPO: wayland/ci-templates
     ARCH_TAG: $CI_PIPELINE_IID
     ARCH_PKGS: 'this-package-should-not-exist'
+  needs:
+    - arch-forced:rolling@container-ifnot-exists
 
 
 #

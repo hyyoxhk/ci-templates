@@ -19,12 +19,16 @@ variables:
   extends: .centos@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
+  needs:
+    - "bootstrap"
 
 
 .centos:ci@container-ifnot-exists:
   extends: .centos@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
+  needs:
+    - "bootstrap"
 
 
 #
@@ -57,6 +61,8 @@ centos:7@container-build:
 centos:7@check:
   extends: .centos@check
   image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_ID
+  needs:
+    - centos:7@container-build
 
 
 #
@@ -73,6 +79,8 @@ centos-forced:7@container-ifnot-exists:
 centos-forced-ifnot-exists:7@check:
   extends: .centos@check
   image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_IID
+  needs:
+    - centos-forced:7@container-ifnot-exists
 
 
 #
@@ -86,6 +94,8 @@ centos:7@container-ifnot-exists:
     CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
     CENTOS_RPMS: 'this-package-should-not-exist'
+  needs:
+    - centos-forced:7@container-ifnot-exists
 
 
 #
@@ -116,3 +126,5 @@ centos:8@container-build:
 centos:8@check:
   extends: .centos@check
   image: $CI_REGISTRY_IMAGE/centos/8:$CI_PIPELINE_ID
+  needs:
+    - centos:8@container-build

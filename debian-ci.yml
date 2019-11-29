@@ -19,24 +19,32 @@ variables:
   extends: .debian@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
+  needs:
+    - "bootstrap"
 
 
 .debian:ci@container-ifnot-exists:
   extends: .debian@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
+  needs:
+    - "bootstrap"
 
 
 .debian:ci@container-build@arm64v8:
   extends: .debian@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 
 .debian:ci@container-ifnot-exists@arm64v8:
   extends: .debian@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
+  needs:
+    - "bootstrap@arm64v8"
 
 #
 # generic debian checks
@@ -68,6 +76,8 @@ debian:stretch@container-build:
 debian:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_ID
+  needs:
+    - debian:stretch@container-build
 
 
 debian:stretch@container-build@arm64v8:
@@ -82,6 +92,8 @@ debian:stretch@check@arm64v8:
   image: $CI_REGISTRY_IMAGE/debian/stretch:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
+  needs:
+    - debian:stretch@container-build@arm64v8
 
 
 #
@@ -98,6 +110,8 @@ debian-forced:stretch@container-ifnot-exists:
 debian-forced-ifnot-exists:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
+  needs:
+    - debian-forced:stretch@container-ifnot-exists
 
 
 #
@@ -111,6 +125,8 @@ debian:stretch@container-ifnot-exists:
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
     DEBIAN_DEBS: 'this-package-should-not-exist'
+  needs:
+    - debian-forced:stretch@container-ifnot-exists
 
 
 #
@@ -141,6 +157,8 @@ debian:sid@container-build:
 debian:sid@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/sid:$CI_PIPELINE_ID
+  needs:
+    - debian:sid@container-build
 
 debian:buster@container-build:
   extends: .debian:ci@container-build
@@ -151,3 +169,5 @@ debian:buster@container-build:
 debian:buster@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/buster:$CI_PIPELINE_ID
+  needs:
+    - debian:buster@container-build
