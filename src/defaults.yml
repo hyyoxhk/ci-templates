@@ -1,0 +1,107 @@
+## This is the defaults file, that will be merged with the distribution
+## specific YAML.
+##
+## Given that each distribution might havedifferent default values, this file
+## is also processed by jinja before merging with the distribution configuration
+##
+
+## The root level entry must be unique, but not necesseraly tied to a
+## distribution. Each root level entry will generate a new template in
+## the `templates` folder.
+##
+## Special case:
+##   - `defaults`: this defines the defautl values for the templates
+defaults:
+
+  ## @distribution: The distribution name
+  ##
+  ## Each template will be given the `{distribution}.yml` name
+  ##
+  ## Mandatory
+  distribution: ""
+
+  ## @version: The version used in the template
+  ##
+  ## Note that this might be overwritten by the $REPO_SUFFIX later by users
+  version: ""
+
+  ## @version_examples: Examples of versionning you can have for a distro
+  ##
+  ## This is purely to prettify the generated template, but will only
+  ## be used if "version" is not defined in the YAML file.
+  ##
+  ## Mandatory if "version" is not defined
+  version_examples: ""
+
+  ## @package_type: The package type supported by the distribution
+  ##
+  ## This has no "real" effect but to use debs on debian/ubuntu and rpms on
+  ## fedora/centos
+  ##
+  ## Mandatory
+  package_type: ""
+
+  ## @upgrade: The list of commands that are used to upgrade the container image
+  ##
+  ## This needs to be a list
+  ##
+  ## Mandatory
+  upgrade: []
+
+  ## @install: The list of commands that are used to install a package in
+  ##           the container image
+  ##
+  ## This needs to be a list
+  ##
+  ## Mandatory
+  install: []
+
+  ## @clean: The list of commands that are used to remove leftovers from
+  ##         the package manager in the final container image
+  ##
+  ## This needs to be a list
+  ##
+  ## Mandatory
+  clean: []
+
+  ## @aarch64: Does the upstream docker image is aarch64 capable
+  ##
+  ## boolean
+  aarch64: true
+
+  ##############################################################################
+
+  ## The following variables are infered and don't need to be overwritten by
+  ## the distributions
+
+  ## @image: The base image to pull on docker
+  ##
+  ## Some distribution (alpine, arch, ...) have only one upstream image
+  ## we can pull
+  {% if not version %}
+  image: "$DISTRO:$DISTRO_VERSION"
+  {% else %}
+  image: "{{distribution}}:{{version}}"
+  {% endif %}
+
+  ## @docker_repo: The base repo to pull on docker
+  ##
+  {% if not image %}
+  docker_repo: "{{distribution}}"
+  {% else %}
+  docker_repo: "{{image.split('/')[0]}}"
+  {% endif %}
+
+  ## @PACKAGES: the produced environment variable for the list of packages to
+  ##            install in the final container
+  PACKAGES: "{{DISTRIBUTION}}_{{PACKAGE_TYPE}}"
+
+  ## @VERSION: the produced environment variable for $DISTRO_VERSION
+  ##
+  ## Note: this is a special case and "VERSION" can not be overwritten by
+  ##       the YAML file, and will always take the value defined here
+  {% if not version %}
+  VERSION: "${{DISTRIBUTION}}_VERSION"
+  {% else %}
+  VERSION: "{{version}}"
+  {% endif %}
