@@ -5,66 +5,18 @@
 include:
   # projects using these templates should not need to pull the bootstrap
   - local: '/bootstrap/bootstrap.yml'
+{% for distribution in distribs %}
 
-  # Alpine container builder template
+  # {{ distribution.title() }} container builder template
   # projects using this should reference this with the following:
   #
   # - project: 'wayland/ci-templates'
   #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/alpine.yml'
+  #   file: '/templates/{{ distribution }}.yml'
   #
-  - local: '/templates/alpine.yml'
-  - local: '/alpine-ci.yml'
-
-  # Arch container builder template
-  # projects using this should reference this with the following:
-  #
-  # - project: 'wayland/ci-templates'
-  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/arch.yml'
-  #
-  - local: '/templates/arch.yml'
-  - local: '/arch-ci.yml'
-
-  # Centos container builder template
-  # projects using this should reference this with the following:
-  #
-  # - project: 'wayland/ci-templates'
-  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/centos.yml'
-  #
-  - local: '/templates/centos.yml'
-  - local: '/centos-ci.yml'
-
-  # Debian container builder template
-  # projects using this should reference this with the following:
-  #
-  # - project: 'wayland/ci-templates'
-  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/debian.yml'
-  #
-  - local: '/templates/debian.yml'
-  - local: '/debian-ci.yml'
-
-  # Fedora container builder template
-  # projects using this should reference this with the following:
-  #
-  # - project: 'wayland/ci-templates'
-  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/fedora.yml'
-  #
-  - local: '/templates/fedora.yml'
-  - local: '/fedora-ci.yml'
-
-  # Ubuntu container builder template
-  # projects using this should reference this with the following:
-  #
-  # - project: 'wayland/ci-templates'
-  #   ref: master # or git sha, see https://docs.gitlab.com/ee/ci/yaml/#includefile
-  #   file: '/templates/ubuntu.yml'
-  #
-  - local: '/templates/ubuntu.yml'
-  - local: '/ubuntu-ci.yml'
+  - local: '/templates/{{ distribution }}.yml'
+  - local: '/{{ distribution }}-ci.yml'
+{% endfor %}
 
 variables:
   BOOTSTRAP_TAG: '2019-08-13.0'
@@ -73,18 +25,10 @@ variables:
 stages:
   - sanity check
   - bootstrapping
-  - alpine_container_build
-  - alpine_check
-  - arch_container_build
-  - arch_check
-  - centos_container_build
-  - centos_check
-  - debian_container_build
-  - debian_check
-  - fedora_container_build
-  - fedora_check
-  - ubuntu_container_build
-  - ubuntu_check
+{% for distribution in distribs %}
+  - {{ distribution }}_container_build
+  - {{ distribution }}_check
+{% endfor %}
   - container_push
 
 

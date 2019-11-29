@@ -84,3 +84,13 @@ if __name__ == '__main__':
         print(f'generating {dest_ci}')
         with open(dest_ci, 'w') as out_stream:
             template_ci.stream(config).dump(out_stream)
+
+    # finally, regenerate the .gitlab-ci.yml
+    template_general_ci = env.get_template('gitlab-ci.tmpl')
+
+    distribs = [d for d in sorted(config_data.keys()) if d not in ('defaults', 'globals')]
+    dest = f'.gitlab-ci.yml'
+
+    print(f'generating {dest}')
+    with open(dest, 'w') as out_stream:
+        template_general_ci.stream({'distribs': distribs}).dump(out_stream)
