@@ -2,7 +2,7 @@
 
 # This template will create a debian image based on the following variables:
 #
-#  - DEBIAN_VERSION: the debian version (stretch, sid, etc...)
+#  - DEBIAN_VERSION: the debian version (stretch, sid, buster, etc...)
 #  - DEBIAN_DEBS:    if set, list of packages that needs to be installed
 #  - DEBIAN_EXEC:    if set, this command will be run once the packages have
 #                    been installed

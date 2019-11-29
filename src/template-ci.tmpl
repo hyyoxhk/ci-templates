@@ -1,0 +1,172 @@
+# vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
+
+variables:
+  {{PACKAGES}}: {% if curl -%}
+  'wget'
+  {% else -%}
+  'curl'
+  {% endif %}
+  {{DISTRIBUTION}}_EXEC: '{{ script }}'
+
+
+################################################################################
+#
+# {{distribution.title()}} checks
+#
+################################################################################
+
+
+#
+# A few templates to avoid writing the image and stage in each job
+#
+.{{distribution}}:ci@container-build:
+  extends: .{{distribution}}@container-build
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: {{distribution}}_container_build
+
+
+.{{distribution}}:ci@container-ifnot-exists:
+  extends: .{{distribution}}@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: {{distribution}}_container_build
+
+{% if aarch64 %}
+
+.{{distribution}}:ci@container-build@arm64v8:
+  extends: .{{distribution}}@container-build@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: {{distribution}}_container_build
+
+
+.{{distribution}}:ci@container-ifnot-exists@arm64v8:
+  extends: .{{distribution}}@container-ifnot-exists@arm64v8
+  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
+  stage: {{distribution}}_container_build
+{% endif %}
+
+#
+# generic {{distribution}} checks
+#
+.{{distribution}}@check:
+  stage: {{distribution}}_check
+  script:
+{% if not curl %}
+      # make sure curl has been installed
+    - curl --insecure https://gitlab.freedesktop.org
+{% else %}
+      # make sure wget has been installed
+    - wget https://gitlab.freedesktop.org
+{% endif %}
+      # make sure our test script has been run
+    - if [[ -e /test_file ]] ;
+      then
+        echo ${{DISTRIBUTION}}_SCRIPT properly run ;
+      else
+        exit 1 ;
+      fi
+
+
+{# We only do the full test on the first version of the distribution #}
+{# other versions have a slighter check at the end #}
+#
+# straight {{distribution}} build and test
+#
+{{distribution}}:{{ versions[0] }}@container-build:
+  extends: .{{distribution}}:ci@container-build
+  variables:
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
+
+
+{{distribution}}:{{ versions[0] }}@check:
+  extends: .{{distribution}}@check
+  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_ID
+{% if aarch64 %}
+
+
+{{distribution}}:{{ versions[0] }}@container-build@arm64v8:
+  extends: .{{distribution}}:ci@container-build@arm64v8
+  variables:
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: arm64v8-$CI_PIPELINE_ID
+
+
+{{distribution}}:{{ versions[0] }}@check@arm64v8:
+  extends: .{{distribution}}@check
+  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:arm64v8-$CI_PIPELINE_ID
+  tags:
+    - aarch64
+{% endif %}
+
+
+#
+# make sure we do rebuild the image if the tag does not exist and check
+#
+{{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists:
+  extends: .{{distribution}}:ci@container-ifnot-exists
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+
+
+{{distribution}}-forced-ifnot-exists:{{ versions[0] }}@check:
+  extends: .{{distribution}}@check
+  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_IID
+
+
+#
+# make sure we do not rebuild the image if the tag exists (during the check)
+#
+{{distribution}}:{{ versions[0] }}@container-ifnot-exists:
+  extends: .{{distribution}}:ci@container-ifnot-exists
+  stage: {{distribution}}_check
+  variables:
+    UPSTREAM_REPO: wayland/ci-templates
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+    {{ PACKAGES }}: 'this-package-should-not-exist'
+
+
+#
+# FIXME
+# make sure we do not rebuild the image if the tag exists in the upstream
+# repository (during the check)
+#
+# .{{distribution}}:{{ versions[0] }}-upstream@container-ifnot-exists:
+#   extends: .{{distribution}}:ci@container-ifnot-exists
+#   stage: {{distribution}}_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# {% if not version %}
+#     {{VERSION.strip('$')}}: '{{ versions[0] }}'
+# {% endif %}
+#     {{DISTRIBUTION}}_TAG: latest
+#     {{ PACKAGES }}: 'this-package-should-not-exist'
+#
+{% if versions[1:] %}
+
+#
+# Try our {{distribution}} scripts with other versions and check
+#
+{% for v in versions[1:] %}
+
+{{distribution}}:{{v}}@container-build:
+  extends: .{{distribution}}:ci@container-build
+  variables:
+    {{VERSION.strip('$')}}: '{{v}}'
+    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
+
+{{distribution}}:{{v}}@check:
+  extends: .{{distribution}}@check
+  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{v}}:$CI_PIPELINE_ID
+{% endfor %}
+{% endif %}

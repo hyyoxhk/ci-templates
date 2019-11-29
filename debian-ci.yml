@@ -38,7 +38,6 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
 
-
 #
 # generic debian checks
 #
@@ -62,8 +61,9 @@ variables:
 debian:stretch@container-build:
   extends: .debian:ci@container-build
   variables:
+    DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_ID
-    DEBIAN_VERSION: stretch
+
 
 debian:stretch@check:
   extends: .debian@check
@@ -73,8 +73,8 @@ debian:stretch@check:
 debian:stretch@container-build@arm64v8:
   extends: .debian:ci@container-build@arm64v8
   variables:
+    DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: arm64v8-$CI_PIPELINE_ID
-    DEBIAN_VERSION: stretch
 
 
 debian:stretch@check@arm64v8:
@@ -91,10 +91,11 @@ debian-forced:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    DEBIAN_VERSION: stretch
+    DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
 
-debian:forced-ifnot-exists@check:
+
+debian-forced-ifnot-exists:stretch@check:
   extends: .debian@check
   image: $CI_REGISTRY_IMAGE/debian/stretch:$CI_PIPELINE_IID
 
@@ -107,7 +108,7 @@ debian:stretch@container-ifnot-exists:
   stage: debian_check
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    DEBIAN_VERSION: stretch
+    DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
     DEBIAN_DEBS: 'this-package-should-not-exist'
 
@@ -117,24 +118,35 @@ debian:stretch@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-.debian:stretch-upstream@container-ifnot-exists:
-  extends: .debian:ci@container-ifnot-exists
-  stage: debian_check
+# .debian:stretch-upstream@container-ifnot-exists:
+#   extends: .debian:ci@container-ifnot-exists
+#   stage: debian_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# #     DEBIAN_VERSION: 'stretch'
+# #     DEBIAN_TAG: latest
+#     DEBIAN_DEBS: 'this-package-should-not-exist'
+#
+
+#
+# Try our debian scripts with other versions and check
+#
+
+debian:sid@container-build:
+  extends: .debian:ci@container-build
   variables:
-    UPSTREAM_REPO: FIXME
-    DEBIAN_VERSION: stretch
-    DEBIAN_TAG: latest
-    DEBIAN_DEBS: 'this-package-should-not-exist'
+    DEBIAN_VERSION: 'sid'
+    DEBIAN_TAG: $CI_PIPELINE_ID
 
+debian:sid@check:
+  extends: .debian@check
+  image: $CI_REGISTRY_IMAGE/debian/sid:$CI_PIPELINE_ID
 
-#
-# Try our debian scripts with an other version and check
-#
 debian:buster@container-build:
   extends: .debian:ci@container-build
   variables:
+    DEBIAN_VERSION: 'buster'
     DEBIAN_TAG: $CI_PIPELINE_ID
-    DEBIAN_VERSION: buster
 
 debian:buster@check:
   extends: .debian@check

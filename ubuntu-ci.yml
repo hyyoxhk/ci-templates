@@ -38,7 +38,6 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
 
-
 #
 # generic ubuntu checks
 #
@@ -50,7 +49,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DEBIAN_SCRIPT properly run ;
+        echo $UBUNTU_SCRIPT properly run ;
       else
         exit 1 ;
       fi
@@ -62,8 +61,9 @@ variables:
 ubuntu:18.10@container-build:
   extends: .ubuntu:ci@container-build
   variables:
-    UBUNTU_TAG: $CI_PIPELINE_ID
     UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: $CI_PIPELINE_ID
+
 
 ubuntu:18.10@check:
   extends: .ubuntu@check
@@ -73,8 +73,8 @@ ubuntu:18.10@check:
 ubuntu:18.10@container-build@arm64v8:
   extends: .ubuntu:ci@container-build@arm64v8
   variables:
-    UBUNTU_TAG: arm64v8-$CI_PIPELINE_ID
     UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 ubuntu:18.10@check@arm64v8:
@@ -94,7 +94,8 @@ ubuntu-forced:18.10@container-ifnot-exists:
     UBUNTU_VERSION: '18.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
 
-ubuntu:forced-ifnot-exists@check:
+
+ubuntu-forced-ifnot-exists:18.10@check:
   extends: .ubuntu@check
   image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_IID
 
@@ -117,24 +118,25 @@ ubuntu:18.10@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-.ubuntu:18.10-upstream@container-ifnot-exists:
-  extends: .ubuntu:ci@container-ifnot-exists
-  stage: ubuntu_check
-  variables:
-    UPSTREAM_REPO: FIXME
-    UBUNTU_VERSION: '18.10'
-    UBUNTU_TAG: latest
-    UBUNTU_DEBS: 'this-package-should-not-exist'
-
+# .ubuntu:18.10-upstream@container-ifnot-exists:
+#   extends: .ubuntu:ci@container-ifnot-exists
+#   stage: ubuntu_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# #     UBUNTU_VERSION: '18.10'
+# #     UBUNTU_TAG: latest
+#     UBUNTU_DEBS: 'this-package-should-not-exist'
+#
 
 #
-# Try our debian scripts with an other version and check
+# Try our ubuntu scripts with other versions and check
 #
+
 ubuntu:18.04@container-build:
   extends: .ubuntu:ci@container-build
   variables:
-    UBUNTU_TAG: $CI_PIPELINE_ID
     UBUNTU_VERSION: '18.04'
+    UBUNTU_TAG: $CI_PIPELINE_ID
 
 ubuntu:18.04@check:
   extends: .ubuntu@check

@@ -2,7 +2,7 @@
 
 # This template will create a ubuntu image based on the following variables:
 #
-#  - UBUNTU_VERSION: the ubuntu version (18.04, 16.04, etc...)
+#  - UBUNTU_VERSION: the ubuntu version (18.10, 18.04, etc...)
 #  - UBUNTU_DEBS:    if set, list of packages that needs to be installed
 #  - UBUNTU_EXEC:    if set, this command will be run once the packages have
 #                    been installed

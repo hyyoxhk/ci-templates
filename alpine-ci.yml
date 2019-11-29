@@ -7,7 +7,7 @@ variables:
 
 ################################################################################
 #
-# Alpine linux checks
+# Alpine checks
 #
 ################################################################################
 
@@ -38,7 +38,6 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
 
-
 #
 # generic alpine checks
 #
@@ -64,6 +63,7 @@ alpine:latest@container-build:
   variables:
     ALPINE_TAG: $CI_PIPELINE_ID
 
+
 alpine:latest@check:
   extends: .alpine@check
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_ID
@@ -75,7 +75,7 @@ alpine:latest@container-build@arm64v8:
     ALPINE_TAG: arm64v8-$CI_PIPELINE_ID
 
 
-alpine:latest@@check@arm64v8:
+alpine:latest@check@arm64v8:
   extends: .alpine@check
   image: $CI_REGISTRY_IMAGE/alpine/latest:arm64v8-$CI_PIPELINE_ID
   tags:
@@ -114,10 +114,11 @@ alpine:latest@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-.alpine-upstream@container-ifnot-exists:
-  extends: .alpine:ci@container-ifnot-exists
-  stage: alpine_check
-  variables:
-    UPSTREAM_REPO: libinput/libinput
-    ALPINE_TAG: latest
-    ALPINE_PKGS: 'this-package-should-not-exist'
+# .alpine:latest-upstream@container-ifnot-exists:
+#   extends: .alpine:ci@container-ifnot-exists
+#   stage: alpine_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# #     ALPINE_TAG: latest
+#     ALPINE_PKGS: 'this-package-should-not-exist'
+#

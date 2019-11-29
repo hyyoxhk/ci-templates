@@ -2,7 +2,7 @@
 
 # This template will create a centos image based on the following variables:
 #
-#  - CENTOS_VERSION: the centos version (7.7, 8.0, etc...)
+#  - CENTOS_VERSION: the centos version (7, 8, etc...)
 #  - CENTOS_RPMS:    if set, list of packages that needs to be installed
 #  - CENTOS_EXEC:    if set, this command will be run once the packages have
 #                    been installed

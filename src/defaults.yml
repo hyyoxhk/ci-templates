@@ -9,8 +9,9 @@
 ## distribution. Each root level entry will generate a new template in
 ## the `templates` folder.
 ##
-## Special case:
+## Special cases:
 ##   - `defaults`: this defines the defautl values for the templates
+##   - `globals`: some global definitions
 defaults:
 
   ## @distribution: The distribution name
@@ -25,13 +26,10 @@ defaults:
   ## Note that this might be overwritten by the $REPO_SUFFIX later by users
   version: ""
 
-  ## @version_examples: Examples of versionning you can have for a distro
-  ##
-  ## This is purely to prettify the generated template, but will only
-  ## be used if "version" is not defined in the YAML file.
+  ## @versions: Which versions are tested in the CI
   ##
   ## Mandatory if "version" is not defined
-  version_examples: ""
+  versions: [{{version}}]
 
   ## @package_type: The package type supported by the distribution
   ##
@@ -69,6 +67,13 @@ defaults:
   ## boolean
   aarch64: true
 
+  ## @curl: Does the upstream ships curl?
+  ##
+  ## Used for generating the CI scripts
+  ## if true, the CI script will use wget instead (we need a package not in the
+  ## base image)
+  curl: false
+
   ##############################################################################
 
   ## The following variables are infered and don't need to be overwritten by
@@ -105,3 +110,27 @@ defaults:
   {% else %}
   VERSION: "{{version}}"
   {% endif %}
+
+  ## @version_examples: Examples of versionning you can have for a distro
+  ##
+  ## This is purely to prettify the generated template, but will only
+  ## be used if "version" is not defined in the YAML file.
+  ##
+  {% if versions %}
+  version_examples: {{ ', '.join(versions) }}
+  {% else %}
+  version_examples: {{ version }}
+  {% endif %}
+
+
+globals:
+  ## @scripts: list of scripts to be tested against in CI
+  ##
+  ## distros should not overwrite this list, it has a special global meaning
+  scripts:
+    - '.hidden_dir/test.sh /test_file'
+    - '.hidden_dir/test.sh /test_file'
+    - '/bin/bash test/script.sh'
+    - './test/script.sh'
+    - '/bin/bash test/script.sh'
+    - 'sh test/script.sh'

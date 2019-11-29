@@ -1,7 +1,10 @@
 debian:
   distribution: debian
   package_type: debs
-  version_examples: stretch, sid
+  versions:
+    - stretch
+    - sid
+    - buster
 
   prepare:
     - cat /etc/apt/sources.list

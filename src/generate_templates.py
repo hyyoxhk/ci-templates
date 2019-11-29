@@ -18,6 +18,8 @@ if __name__ == '__main__':
     src_folder = Path('src')
 
     defaults_template = env.get_template('defaults.yml')
+    globs = yaml.load(defaults_template.render({}),
+                      Loader=yaml.Loader)['globals']
 
     for distrib in [x for x in src_folder.iterdir()
                     if (x.name.endswith('.yml')
@@ -51,14 +53,34 @@ if __name__ == '__main__':
 
     # load our distribution template
     template = env.get_template('template.tmpl')
+    # and our ci template
+    template_ci = env.get_template('template-ci.tmpl')
 
     out_folder = Path('templates')
     if not out_folder.exists():
         os.mkdir(out_folder)
 
+    # define a generator for the list of scripts to be run in each distribution
+    def get_script():
+        n = 0
+        while True:
+            yield globs['scripts'][n]
+            n += 1
+            n %= len(globs['scripts'])
+
+    scripts = get_script()
+
     # and render each distribution in the templates source directory
-    for distrib, config in config_data.items():
+    for distrib, config in sorted(config_data.items()):
         dest = out_folder / f'{distrib}.yml'
+        dest_ci = f'{distrib}-ci.yml'
+
+        # use the next script for this config
+        config['script'] = next(scripts)
+
         print(f'generating {dest}')
         with open(dest, 'w') as out_stream:
             template.stream(config).dump(out_stream)
+        print(f'generating {dest_ci}')
+        with open(dest_ci, 'w') as out_stream:
+            template_ci.stream(config).dump(out_stream)

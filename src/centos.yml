@@ -1,7 +1,10 @@
 centos:
   distribution: centos
   package_type: rpms
-  version_examples: 7.7, 8.0
+  versions:
+    # Centos 6 segfaults during yum upgrade for unknown reasons
+    - '7'
+    - '8'
 
   upgrade:
     - dnf --help >/dev/null 2>&1 && DNF=dnf || DNF=yum
@@ -14,4 +17,6 @@ centos:
     - $DNF clean all
 
   aarch64: false
+
+  curl: true
 

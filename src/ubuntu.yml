@@ -1,7 +1,9 @@
 ubuntu:
   distribution: ubuntu
   package_type: debs
-  version_examples: 18.04, 16.04
+  versions:
+    - '18.10'
+    - '18.04'
 
   prepare:
     - echo 'path-exclude=/usr/share/doc/*' > /etc/dpkg/dpkg.cfg.d/99-exclude-cruft

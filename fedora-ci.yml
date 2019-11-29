@@ -38,7 +38,6 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
 
-
 #
 # generic fedora checks
 #
@@ -59,34 +58,22 @@ variables:
 #
 # straight fedora build and test
 #
-fedora:29@container-build:
+fedora:30@container-build:
   extends: .fedora:ci@container-build
   variables:
-    FEDORA_VERSION: 29
+    FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_ID
 
 
-fedora:29@check:
+fedora:30@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
-
-
-fedora:rawhide@container-build:
-  extends: .fedora:ci@container-build
-  variables:
-    FEDORA_VERSION: rawhide
-    FEDORA_TAG: $CI_PIPELINE_ID
-
-
-fedora:rawhide@check:
-  extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_ID
 
 
 fedora:30@container-build@arm64v8:
   extends: .fedora:ci@container-build@arm64v8
   variables:
-    FEDORA_VERSION: 30
+    FEDORA_VERSION: '30'
     FEDORA_TAG: arm64v8-$CI_PIPELINE_ID
 
 
@@ -100,28 +87,28 @@ fedora:30@check@arm64v8:
 #
 # make sure we do rebuild the image if the tag does not exist and check
 #
-fedora-forced:rawhide@container-ifnot-exists:
+fedora-forced:30@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    FEDORA_VERSION: rawhide
+    FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_IID
 
 
-fedora-forced-ifnot-exists:rawhide@check:
+fedora-forced-ifnot-exists:30@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_IID
 
 
 #
 # make sure we do not rebuild the image if the tag exists (during the check)
 #
-fedora:rawhide@container-ifnot-exists:
+fedora:30@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    FEDORA_VERSION: rawhide
+    FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exist'
 
@@ -131,11 +118,36 @@ fedora:rawhide@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-.fedora:29-upstream@container-ifnot-exists:
-  extends: .fedora:ci@container-ifnot-exists
-  stage: fedora_check
+# .fedora:30-upstream@container-ifnot-exists:
+#   extends: .fedora:ci@container-ifnot-exists
+#   stage: fedora_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# #     FEDORA_VERSION: '30'
+# #     FEDORA_TAG: latest
+#     FEDORA_RPMS: 'this-package-should-not-exist'
+#
+
+#
+# Try our fedora scripts with other versions and check
+#
+
+fedora:29@container-build:
+  extends: .fedora:ci@container-build
   variables:
-    UPSTREAM_REPO: libinput/libinput
-    FEDORA_VERSION: 29
-    FEDORA_TAG: latest
-    FEDORA_RPMS: 'this-package-should-not-exist'
+    FEDORA_VERSION: '29'
+    FEDORA_TAG: $CI_PIPELINE_ID
+
+fedora:29@check:
+  extends: .fedora@check
+  image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
+
+fedora:rawhide@container-build:
+  extends: .fedora:ci@container-build
+  variables:
+    FEDORA_VERSION: 'rawhide'
+    FEDORA_TAG: $CI_PIPELINE_ID
+
+fedora:rawhide@check:
+  extends: .fedora@check
+  image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID

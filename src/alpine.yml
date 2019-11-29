@@ -14,3 +14,5 @@ alpine:
 
   clean:
     - rm -f /var/cache/apk/APKINDEX.*
+
+  curl: true

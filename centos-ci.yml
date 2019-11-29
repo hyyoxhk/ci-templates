@@ -7,7 +7,7 @@ variables:
 
 ################################################################################
 #
-# Fedora checks
+# Centos checks
 #
 ################################################################################
 
@@ -47,24 +47,10 @@ variables:
 #
 # straight centos build and test
 #
-# Centos 6 segfaults during yum upgrade for unknown reasons
-#
-# centos:6@container-build:
-#   extends: .centos:ci@container-build
-#   variables:
-#     CENTOS_VERSION: 6
-#     CENTOS_TAG: $CI_PIPELINE_ID
-#
-#
-# centos:6@check:
-#   extends: .centos@check
-#   image: $CI_REGISTRY_IMAGE/centos/6:$CI_PIPELINE_ID
-
-
 centos:7@container-build:
   extends: .centos:ci@container-build
   variables:
-    CENTOS_VERSION: 7
+    CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_ID
 
 
@@ -73,43 +59,31 @@ centos:7@check:
   image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_ID
 
 
-centos:8@container-build:
-  extends: .centos:ci@container-build
-  variables:
-    CENTOS_VERSION: 8
-    CENTOS_TAG: $CI_PIPELINE_ID
-
-
-centos:8@check:
-  extends: .centos@check
-  image: $CI_REGISTRY_IMAGE/centos/8:$CI_PIPELINE_ID
-
-
 #
 # make sure we do rebuild the image if the tag does not exist and check
 #
-centos-forced:8@container-ifnot-exists:
+centos-forced:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    CENTOS_VERSION: 8
+    CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
 
 
-centos-forced-ifnot-exists:8@check:
+centos-forced-ifnot-exists:7@check:
   extends: .centos@check
-  image: $CI_REGISTRY_IMAGE/centos/8:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_IID
 
 
 #
 # make sure we do not rebuild the image if the tag exists (during the check)
 #
-centos:8@container-ifnot-exists:
+centos:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   stage: centos_check
   variables:
     UPSTREAM_REPO: wayland/ci-templates
-    CENTOS_VERSION: 8
+    CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
     CENTOS_RPMS: 'this-package-should-not-exist'
 
@@ -119,11 +93,26 @@ centos:8@container-ifnot-exists:
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
 #
-.centos:7-upstream@container-ifnot-exists:
-  extends: .centos:ci@container-ifnot-exists
-  stage: centos_check
+# .centos:7-upstream@container-ifnot-exists:
+#   extends: .centos:ci@container-ifnot-exists
+#   stage: centos_check
+#   variables:
+#     UPSTREAM_REPO: libinput/libinput
+# #     CENTOS_VERSION: '7'
+# #     CENTOS_TAG: latest
+#     CENTOS_RPMS: 'this-package-should-not-exist'
+#
+
+#
+# Try our centos scripts with other versions and check
+#
+
+centos:8@container-build:
+  extends: .centos:ci@container-build
   variables:
-    UPSTREAM_REPO: libinput/libinput
-    CENTOS_VERSION: 7
-    CENTOS_TAG: latest
-    CENTOS_RPMS: 'this-package-should-not-exist'
+    CENTOS_VERSION: '8'
+    CENTOS_TAG: $CI_PIPELINE_ID
+
+centos:8@check:
+  extends: .centos@check
+  image: $CI_REGISTRY_IMAGE/centos/8:$CI_PIPELINE_ID

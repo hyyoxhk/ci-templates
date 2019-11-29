@@ -1,7 +1,10 @@
 fedora:
   distribution: fedora
   package_type: rpms
-  version_examples: 28, 29, rawhide
+  versions:
+    - '30'
+    - '29'
+    - rawhide
 
   upgrade:
     - dnf upgrade -y
@@ -11,4 +14,6 @@ fedora:
 
   clean:
     - dnf clean all
+
+  curl: true
 
