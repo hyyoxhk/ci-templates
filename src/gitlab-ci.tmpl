@@ -66,6 +66,7 @@ check commits:
     - master@wayland/ci-templates
   variables:
     GIT_DEPTH: 100
+    GIT_STRATEGY: clone
   artifacts:
     reports:
       junit: results.xml
