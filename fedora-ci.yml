@@ -2,7 +2,7 @@
 
 variables:
   FEDORA_RPMS: 'wget'
-  FEDORA_EXEC: '/bin/bash test/script.sh'
+  FEDORA_EXEC: '.hidden_dir/test.sh /test_file'
 
 
 ################################################################################

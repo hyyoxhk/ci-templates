@@ -2,7 +2,7 @@
 
 variables:
   CENTOS_RPMS: 'wget'
-  CENTOS_EXEC: '/bin/bash test/script.sh'
+  CENTOS_EXEC: './test/script.sh'
 
 
 ################################################################################

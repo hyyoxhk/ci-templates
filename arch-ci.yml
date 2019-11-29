@@ -2,7 +2,7 @@
 
 variables:
   ARCH_PKGS: 'wget'
-  ARCH_EXEC: '.hidden_dir/test.sh /test_file'
+  ARCH_EXEC: '/bin/bash test/script.sh'
 
 
 ################################################################################

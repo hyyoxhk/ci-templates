@@ -2,7 +2,7 @@
 
 variables:
   DEBIAN_DEBS: 'curl'
-  DEBIAN_EXEC: './test/script.sh'
+  DEBIAN_EXEC: 'sh test/script.sh'
 
 
 ################################################################################

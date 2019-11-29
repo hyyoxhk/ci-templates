@@ -2,7 +2,7 @@
 
 variables:
   UBUNTU_DEBS: 'curl'
-  UBUNTU_EXEC: 'sh test/script.sh'
+  UBUNTU_EXEC: '/bin/bash test/script.sh'
 
 
 ################################################################################

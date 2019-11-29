@@ -129,8 +129,6 @@ globals:
   ## distros should not overwrite this list, it has a special global meaning
   scripts:
     - '.hidden_dir/test.sh /test_file'
-    - '.hidden_dir/test.sh /test_file'
     - '/bin/bash test/script.sh'
     - './test/script.sh'
-    - '/bin/bash test/script.sh'
     - 'sh test/script.sh'
