@@ -76,6 +76,27 @@ sanity check:
       'src/generate_template.py' and then commit the result"
     - exit 1
 
+
+check commits:
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  stage: sanity check
+  script:
+    - pip3 install GitPython
+    - pip3 install pytest
+    - |
+      pytest --junitxml=results.xml \
+             --tb=line \
+             --assert=plain \
+             ./.gitlab-ci/check-commit.py
+  except:
+    - master@wayland/ci-templates
+  variables:
+    GIT_DEPTH: 100
+  artifacts:
+    reports:
+      junit: results.xml
+
+
 bootstrap:
   extends: .bootstrap
 
