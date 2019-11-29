@@ -105,6 +105,14 @@
     # push the container image to the registry
     # There is a bug when pushing 2 tags in the same repo with the same base:
     # this may fail. Just retry it after.
+  - export JOB_TAG="${DISTRO_TAG}-built-by-job-${CI_JOB_ID}"
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$JOB_TAG || true
+  - sleep 2
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$JOB_TAG || true
+
+    # Push the final tag
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
