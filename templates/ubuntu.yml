@@ -144,7 +144,8 @@
     - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG > /dev/null && exit 0 || true
 
     # copy the original image into the current project registry namespace
-    - skopeo copy docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+    - skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
+                  docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
                   docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG && exit 0 || true
 
 

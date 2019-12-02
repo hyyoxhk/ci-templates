@@ -92,7 +92,9 @@ bootstrap-push@push:
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
     # push the container image to the registry
-    - skopeo copy docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:latest
+    - skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
+                  docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG
+                  docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:latest
   variables:
     GIT_STRATEGY: none
   only:
