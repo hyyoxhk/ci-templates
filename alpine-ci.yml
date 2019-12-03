@@ -100,7 +100,7 @@ alpine:latest@check@arm64v8:
 alpine-forced:latest@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     ALPINE_TAG: $CI_PIPELINE_IID
 
 
@@ -118,7 +118,7 @@ alpine:latest@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   stage: alpine_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     ALPINE_TAG: $CI_PIPELINE_IID
     ALPINE_PKGS: 'this-package-should-not-exist'
   needs:
@@ -126,15 +126,17 @@ alpine:latest@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .alpine:latest-upstream@container-ifnot-exists:
-#   extends: .alpine:ci@container-ifnot-exists
-#   stage: alpine_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     ALPINE_TAG: latest
-#     ALPINE_PKGS: 'this-package-should-not-exist'
-#
+alpine:latest-upstream@container-ifnot-exists:
+  extends: .alpine:ci@container-ifnot-exists
+  stage: alpine_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    ALPINE_TAG: $CI_PIPELINE_IID
+    ALPINE_PKGS: 'this-package-should-not-exist'
+  needs:
+    - alpine-forced:latest@container-ifnot-exists

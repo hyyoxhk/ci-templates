@@ -102,7 +102,7 @@ debian:stretch@check@arm64v8:
 debian-forced:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
 
@@ -121,7 +121,7 @@ debian:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   stage: debian_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
     DEBIAN_DEBS: 'this-package-should-not-exist'
@@ -130,19 +130,21 @@ debian:stretch@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .debian:stretch-upstream@container-ifnot-exists:
-#   extends: .debian:ci@container-ifnot-exists
-#   stage: debian_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     DEBIAN_VERSION: 'stretch'
-# #     DEBIAN_TAG: latest
-#     DEBIAN_DEBS: 'this-package-should-not-exist'
-#
+debian:stretch-upstream@container-ifnot-exists:
+  extends: .debian:ci@container-ifnot-exists
+  stage: debian_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    DEBIAN_VERSION: 'stretch'
+    DEBIAN_TAG: $CI_PIPELINE_IID
+    DEBIAN_DEBS: 'this-package-should-not-exist'
+  needs:
+    - debian-forced:stretch@container-ifnot-exists
 
 #
 # Try our debian scripts with other versions and check

@@ -71,7 +71,7 @@ centos:7@check:
 centos-forced:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
 
@@ -90,7 +90,7 @@ centos:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   stage: centos_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
     CENTOS_RPMS: 'this-package-should-not-exist'
@@ -99,19 +99,21 @@ centos:7@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .centos:7-upstream@container-ifnot-exists:
-#   extends: .centos:ci@container-ifnot-exists
-#   stage: centos_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     CENTOS_VERSION: '7'
-# #     CENTOS_TAG: latest
-#     CENTOS_RPMS: 'this-package-should-not-exist'
-#
+centos:7-upstream@container-ifnot-exists:
+  extends: .centos:ci@container-ifnot-exists
+  stage: centos_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    CENTOS_VERSION: '7'
+    CENTOS_TAG: $CI_PIPELINE_IID
+    CENTOS_RPMS: 'this-package-should-not-exist'
+  needs:
+    - centos-forced:7@container-ifnot-exists
 
 #
 # Try our centos scripts with other versions and check

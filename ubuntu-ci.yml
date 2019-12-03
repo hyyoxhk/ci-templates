@@ -102,7 +102,7 @@ ubuntu:18.10@check@arm64v8:
 ubuntu-forced:18.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     UBUNTU_VERSION: '18.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
 
@@ -121,7 +121,7 @@ ubuntu:18.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   stage: ubuntu_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     UBUNTU_VERSION: '18.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
     UBUNTU_DEBS: 'this-package-should-not-exist'
@@ -130,19 +130,21 @@ ubuntu:18.10@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .ubuntu:18.10-upstream@container-ifnot-exists:
-#   extends: .ubuntu:ci@container-ifnot-exists
-#   stage: ubuntu_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     UBUNTU_VERSION: '18.10'
-# #     UBUNTU_TAG: latest
-#     UBUNTU_DEBS: 'this-package-should-not-exist'
-#
+ubuntu:18.10-upstream@container-ifnot-exists:
+  extends: .ubuntu:ci@container-ifnot-exists
+  stage: ubuntu_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    UBUNTU_VERSION: '18.10'
+    UBUNTU_TAG: $CI_PIPELINE_IID
+    UBUNTU_DEBS: 'this-package-should-not-exist'
+  needs:
+    - ubuntu-forced:18.10@container-ifnot-exists
 
 #
 # Try our ubuntu scripts with other versions and check

@@ -70,7 +70,7 @@ arch:rolling@check:
 arch-forced:rolling@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     ARCH_TAG: $CI_PIPELINE_IID
 
 
@@ -88,7 +88,7 @@ arch:rolling@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   stage: arch_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     ARCH_TAG: $CI_PIPELINE_IID
     ARCH_PKGS: 'this-package-should-not-exist'
   needs:
@@ -96,15 +96,17 @@ arch:rolling@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .arch:rolling-upstream@container-ifnot-exists:
-#   extends: .arch:ci@container-ifnot-exists
-#   stage: arch_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     ARCH_TAG: latest
-#     ARCH_PKGS: 'this-package-should-not-exist'
-#
+arch:rolling-upstream@container-ifnot-exists:
+  extends: .arch:ci@container-ifnot-exists
+  stage: arch_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    ARCH_TAG: $CI_PIPELINE_IID
+    ARCH_PKGS: 'this-package-should-not-exist'
+  needs:
+    - arch-forced:rolling@container-ifnot-exists

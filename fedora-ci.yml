@@ -102,7 +102,7 @@ fedora:30@check@arm64v8:
 fedora-forced:30@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_IID
 
@@ -121,7 +121,7 @@ fedora:30@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
     FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exist'
@@ -130,19 +130,21 @@ fedora:30@container-ifnot-exists:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .fedora:30-upstream@container-ifnot-exists:
-#   extends: .fedora:ci@container-ifnot-exists
-#   stage: fedora_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# #     FEDORA_VERSION: '30'
-# #     FEDORA_TAG: latest
-#     FEDORA_RPMS: 'this-package-should-not-exist'
-#
+fedora:30-upstream@container-ifnot-exists:
+  extends: .fedora:ci@container-ifnot-exists
+  stage: fedora_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+    FEDORA_VERSION: '30'
+    FEDORA_TAG: $CI_PIPELINE_IID
+    FEDORA_RPMS: 'this-package-should-not-exist'
+  needs:
+    - fedora-forced:30@container-ifnot-exists
 
 #
 # Try our fedora scripts with other versions and check

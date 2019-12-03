@@ -121,7 +121,7 @@ variables:
 {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists:
   extends: .{{distribution}}:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
     {{VERSION.strip('$')}}: '{{ versions[0] }}'
 {% endif %}
@@ -142,7 +142,7 @@ variables:
   extends: .{{distribution}}:ci@container-ifnot-exists
   stage: {{distribution}}_check
   variables:
-    UPSTREAM_REPO: wayland/ci-templates
+    UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
     {{VERSION.strip('$')}}: '{{ versions[0] }}'
 {% endif %}
@@ -153,21 +153,23 @@ variables:
 
 
 #
-# FIXME
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
+# special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-# .{{distribution}}:{{ versions[0] }}-upstream@container-ifnot-exists:
-#   extends: .{{distribution}}:ci@container-ifnot-exists
-#   stage: {{distribution}}_check
-#   variables:
-#     UPSTREAM_REPO: libinput/libinput
-# {% if not version %}
-#     {{VERSION.strip('$')}}: '{{ versions[0] }}'
-# {% endif %}
-#     {{DISTRIBUTION}}_TAG: latest
-#     {{ PACKAGES }}: 'this-package-should-not-exist'
-#
+{{distribution}}:{{ versions[0] }}-upstream@container-ifnot-exists:
+  extends: .{{distribution}}:ci@container-ifnot-exists
+  stage: {{distribution}}_check
+  variables:
+    UPSTREAM_REPO: $CI_PROJECT_PATH
+    REPO_SUFFIX: ci_templates_test_upstream
+{% if not version %}
+    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+{% endif %}
+    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+    {{ PACKAGES }}: 'this-package-should-not-exist'
+  needs:
+    - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
 {% if versions[1:] %}
 
 #

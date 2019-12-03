@@ -146,13 +146,22 @@
 
     - *distro_vars
 
+    # to be able to test the following script in the CI of the ci-templates
+    # project itself, we need to put a special case here to have a
+    # different image to pull if it already exists
+    - export REPO_SUFFIX_LOCAL=$REPO_SUFFIX
+    - if [[ x"$REPO_SUFFIX_LOCAL" == x"ci_templates_test_upstream" ]] ;
+      then
+        export REPO_SUFFIX=${DISTRO_VERSION} ;
+      fi
+
     # check if our image is already in the current registry
-    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG > /dev/null && exit 0 || true
+    - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG > /dev/null && exit 0 || true
 
     # copy the original image into the current project registry namespace
     - skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
                   docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG && exit 0 || true
+                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG && exit 0 || true
 
 
 .{{distribution}}@container-ifnot-exists:
