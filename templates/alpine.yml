@@ -148,11 +148,16 @@
       && touch .upstream || true
 
     # copy the original image into the current project registry namespace
+    # we do 2 attempts with skopeo copy at most
     - if [ -f .upstream ] ;
       then
         skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
                     docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                    docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG ||
+        skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
+                    docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
                     docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG ;
+
         exit 0 ;
       fi
 
