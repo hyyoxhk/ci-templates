@@ -158,10 +158,18 @@
     # check if our image is already in the current registry
     - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG > /dev/null && exit 0 || true
 
+    # check if our image is already in the upstream registry
+    - skopeo inspect docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG > /dev/null
+      && touch .upstream || true
+
     # copy the original image into the current project registry namespace
-    - skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
-                  docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-                  docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG && exit 0 || true
+    - if [ -f .upstream ] ;
+      then
+        skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
+                    docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                    docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG ;
+        exit 0 ;
+      fi
 
 
 .{{distribution}}@container-ifnot-exists:
