@@ -68,7 +68,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo ${{DISTRIBUTION}}_SCRIPT properly run ;
+        echo ${{DISTRIBUTION}}_EXEC properly run ;
       else
         exit 1 ;
       fi

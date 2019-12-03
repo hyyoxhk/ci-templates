@@ -57,7 +57,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $UBUNTU_SCRIPT properly run ;
+        echo $UBUNTU_EXEC properly run ;
       else
         exit 1 ;
       fi

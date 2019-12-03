@@ -42,7 +42,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $ARCH_SCRIPT properly run ;
+        echo $ARCH_EXEC properly run ;
       else
         exit 1 ;
       fi
