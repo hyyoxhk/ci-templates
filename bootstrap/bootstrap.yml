@@ -1,5 +1,11 @@
 # vim: set expandtab shiftwidth=2 tabstop=8 textwidth=0:
 
+# Note, we need to include fedora.yml for building our qemu initial images
+# however, the CI script already includes it, so we can not pull it here.
+#
+# include:
+#   - local: '/templates/fedora.yml'
+
 #################################################################
 #                                                               #
 #                    bootstrapping stage                        #
@@ -147,3 +153,25 @@
     - aarch64
   before_script:
     - export ARCH="arm64v8/"
+
+
+# qemu container capable of running a VM to run the test suite
+#
+# To avoid rebuilding this image at every run, and to give better control,
+# QEMU_TAG needs to be set by the caller.
+#
+# installed required packages (in addition to the bootstrap ones):
+# - qemu (of course)
+# - genisoimage (to create a cloud-init iso that will help us filling in the custom parameters)
+# - usbutils (for being able to call lsusb and redirect part a USB device)
+.qemu:
+  extends: .fedora@container-ifnot-exists
+  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
+  stage: bootstrapping_qemu
+  dependencies: []
+  variables:
+    FEDORA_VERSION: '31'
+    FEDORA_TAG: $QEMU_TAG
+    REPO_SUFFIX: qemu-base
+    FEDORA_RPMS: 'buildah podman skopeo jq git qemu genisoimage usbutils'
+    FEDORA_EXEC: 'bootstrap/prep_qemu.sh'

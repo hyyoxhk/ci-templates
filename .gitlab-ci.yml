@@ -68,11 +68,13 @@ include:
 
 variables:
   BOOTSTRAP_TAG: '2019-12-02'
+  QEMU_TAG: '2019-12-03'
 
 
 stages:
   - sanity check
   - bootstrapping
+  - bootstrapping_qemu
   - alpine_container_build
   - alpine_check
   - arch_container_build
@@ -145,3 +147,10 @@ bootstrap@arm64v8:
   extends: .bootstrap@arm64v8
   needs:
     - sanity check
+
+
+bootstrap-qemu:
+  extends: .qemu
+  needs:
+    - sanity check
+    - bootstrap

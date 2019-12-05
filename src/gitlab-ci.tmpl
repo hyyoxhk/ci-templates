@@ -20,11 +20,13 @@ include:
 
 variables:
   BOOTSTRAP_TAG: '{{ bootstrap_tag }}'
+  QEMU_TAG: '{{ qemu_tag }}'
 
 
 stages:
   - sanity check
   - bootstrapping
+  - bootstrapping_qemu
 {% for distribution in distribs %}
   - {{ distribution }}_container_build
   - {{ distribution }}_check
@@ -89,3 +91,10 @@ bootstrap@arm64v8:
   extends: .bootstrap@arm64v8
   needs:
     - sanity check
+
+
+bootstrap-qemu:
+  extends: .qemu
+  needs:
+    - sanity check
+    - bootstrap

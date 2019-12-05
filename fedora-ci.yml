@@ -20,7 +20,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
-    - "bootstrap"
+    - bootstrap
     - sanity check
 
 
@@ -29,7 +29,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
-    - "bootstrap"
+    - bootstrap
     - sanity check
 
 
@@ -38,7 +38,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
-    - "bootstrap@arm64v8"
+    - bootstrap@arm64v8
     - sanity check
 
 
@@ -47,7 +47,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
-    - "bootstrap@arm64v8"
+    - bootstrap@arm64v8
     - sanity check
 
 #

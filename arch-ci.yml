@@ -20,7 +20,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
-    - "bootstrap"
+    - bootstrap
     - sanity check
 
 
@@ -29,7 +29,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
-    - "bootstrap"
+    - bootstrap
     - sanity check
 
 
