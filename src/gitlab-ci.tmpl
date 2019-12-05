@@ -81,7 +81,13 @@ check commits:
 
 bootstrap:
   extends: .bootstrap
+  needs:
+    - sanity check
+    - check commits
 
 
 bootstrap@arm64v8:
   extends: .bootstrap@arm64v8
+  needs:
+    - sanity check
+    - check commits

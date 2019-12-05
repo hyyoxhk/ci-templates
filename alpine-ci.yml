@@ -21,6 +21,8 @@ variables:
   stage: alpine_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .alpine:ci@container-ifnot-exists:
@@ -29,6 +31,8 @@ variables:
   stage: alpine_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .alpine:ci@container-build@arm64v8:
@@ -37,6 +41,8 @@ variables:
   stage: alpine_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 
 .alpine:ci@container-ifnot-exists@arm64v8:
@@ -45,6 +51,8 @@ variables:
   stage: alpine_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 #
 # generic alpine checks
@@ -77,6 +85,8 @@ alpine:latest@check:
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_ID
   needs:
     - alpine:latest@container-build
+    - sanity check
+    - check commits
 
 
 alpine:latest@container-build@arm64v8:
@@ -92,6 +102,8 @@ alpine:latest@check@arm64v8:
     - aarch64
   needs:
     - alpine:latest@container-build@arm64v8
+    - sanity check
+    - check commits
 
 
 #
@@ -109,6 +121,8 @@ alpine-forced-ifnot-exists:latest@check:
   image: $CI_REGISTRY_IMAGE/alpine/latest:$CI_PIPELINE_IID
   needs:
     - alpine-forced:latest@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -123,6 +137,8 @@ alpine:latest@container-ifnot-exists:
     ALPINE_PKGS: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -140,3 +156,5 @@ alpine:latest-upstream@container-ifnot-exists:
     ALPINE_PKGS: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists
+    - sanity check
+    - check commits

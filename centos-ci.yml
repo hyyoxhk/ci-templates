@@ -21,6 +21,8 @@ variables:
   stage: centos_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .centos:ci@container-ifnot-exists:
@@ -29,6 +31,8 @@ variables:
   stage: centos_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 #
@@ -63,6 +67,8 @@ centos:7@check:
   image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_ID
   needs:
     - centos:7@container-build
+    - sanity check
+    - check commits
 
 
 #
@@ -81,6 +87,8 @@ centos-forced-ifnot-exists:7@check:
   image: $CI_REGISTRY_IMAGE/centos/7:$CI_PIPELINE_IID
   needs:
     - centos-forced:7@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -96,6 +104,8 @@ centos:7@container-ifnot-exists:
     CENTOS_RPMS: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -114,6 +124,8 @@ centos:7-upstream@container-ifnot-exists:
     CENTOS_RPMS: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
+    - sanity check
+    - check commits
 
 #
 # Try our centos scripts with other versions and check
@@ -130,3 +142,5 @@ centos:8@check:
   image: $CI_REGISTRY_IMAGE/centos/8:$CI_PIPELINE_ID
   needs:
     - centos:8@container-build
+    - sanity check
+    - check commits

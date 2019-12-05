@@ -21,6 +21,8 @@ variables:
   stage: ubuntu_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .ubuntu:ci@container-ifnot-exists:
@@ -29,6 +31,8 @@ variables:
   stage: ubuntu_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .ubuntu:ci@container-build@arm64v8:
@@ -37,6 +41,8 @@ variables:
   stage: ubuntu_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 
 .ubuntu:ci@container-ifnot-exists@arm64v8:
@@ -45,6 +51,8 @@ variables:
   stage: ubuntu_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 #
 # generic ubuntu checks
@@ -78,6 +86,8 @@ ubuntu:18.10@check:
   image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_ID
   needs:
     - ubuntu:18.10@container-build
+    - sanity check
+    - check commits
 
 
 ubuntu:18.10@container-build@arm64v8:
@@ -94,6 +104,8 @@ ubuntu:18.10@check@arm64v8:
     - aarch64
   needs:
     - ubuntu:18.10@container-build@arm64v8
+    - sanity check
+    - check commits
 
 
 #
@@ -112,6 +124,8 @@ ubuntu-forced-ifnot-exists:18.10@check:
   image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_IID
   needs:
     - ubuntu-forced:18.10@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -127,6 +141,8 @@ ubuntu:18.10@container-ifnot-exists:
     UBUNTU_DEBS: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:18.10@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -145,6 +161,8 @@ ubuntu:18.10-upstream@container-ifnot-exists:
     UBUNTU_DEBS: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:18.10@container-ifnot-exists
+    - sanity check
+    - check commits
 
 #
 # Try our ubuntu scripts with other versions and check
@@ -161,3 +179,5 @@ ubuntu:18.04@check:
   image: $CI_REGISTRY_IMAGE/ubuntu/18.04:$CI_PIPELINE_ID
   needs:
     - ubuntu:18.04@container-build
+    - sanity check
+    - check commits

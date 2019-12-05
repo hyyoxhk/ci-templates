@@ -21,6 +21,8 @@ variables:
   stage: fedora_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .fedora:ci@container-ifnot-exists:
@@ -29,6 +31,8 @@ variables:
   stage: fedora_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .fedora:ci@container-build@arm64v8:
@@ -37,6 +41,8 @@ variables:
   stage: fedora_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 
 .fedora:ci@container-ifnot-exists@arm64v8:
@@ -45,6 +51,8 @@ variables:
   stage: fedora_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 #
 # generic fedora checks
@@ -78,6 +86,8 @@ fedora:30@check:
   image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_ID
   needs:
     - fedora:30@container-build
+    - sanity check
+    - check commits
 
 
 fedora:30@container-build@arm64v8:
@@ -94,6 +104,8 @@ fedora:30@check@arm64v8:
     - aarch64
   needs:
     - fedora:30@container-build@arm64v8
+    - sanity check
+    - check commits
 
 
 #
@@ -112,6 +124,8 @@ fedora-forced-ifnot-exists:30@check:
   image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_IID
   needs:
     - fedora-forced:30@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -127,6 +141,8 @@ fedora:30@container-ifnot-exists:
     FEDORA_RPMS: 'this-package-should-not-exist'
   needs:
     - fedora-forced:30@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -145,6 +161,8 @@ fedora:30-upstream@container-ifnot-exists:
     FEDORA_RPMS: 'this-package-should-not-exist'
   needs:
     - fedora-forced:30@container-ifnot-exists
+    - sanity check
+    - check commits
 
 #
 # Try our fedora scripts with other versions and check
@@ -161,6 +179,8 @@ fedora:29@check:
   image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
   needs:
     - fedora:29@container-build
+    - sanity check
+    - check commits
 
 fedora:rawhide@container-build:
   extends: .fedora:ci@container-build
@@ -173,3 +193,5 @@ fedora:rawhide@check:
   image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID
   needs:
     - fedora:rawhide@container-build
+    - sanity check
+    - check commits

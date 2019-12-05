@@ -25,6 +25,8 @@ variables:
   stage: {{distribution}}_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .{{distribution}}:ci@container-ifnot-exists:
@@ -33,6 +35,8 @@ variables:
   stage: {{distribution}}_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 {% if aarch64 %}
 
@@ -42,6 +46,8 @@ variables:
   stage: {{distribution}}_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 
 
 .{{distribution}}:ci@container-ifnot-exists@arm64v8:
@@ -50,6 +56,8 @@ variables:
   stage: {{distribution}}_container_build
   needs:
     - "bootstrap@arm64v8"
+    - sanity check
+    - check commits
 {% endif %}
 
 #
@@ -93,6 +101,8 @@ variables:
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_ID
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build
+    - sanity check
+    - check commits
 {% if aarch64 %}
 
 
@@ -112,6 +122,8 @@ variables:
     - aarch64
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build@arm64v8
+    - sanity check
+    - check commits
 {% endif %}
 
 
@@ -133,6 +145,8 @@ variables:
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_IID
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -150,6 +164,8 @@ variables:
     {{ PACKAGES }}: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -170,6 +186,8 @@ variables:
     {{ PACKAGES }}: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
+    - sanity check
+    - check commits
 {% if versions[1:] %}
 
 #
@@ -188,5 +206,7 @@ variables:
   image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{v}}:$CI_PIPELINE_ID
   needs:
     - {{distribution}}:{{v}}@container-build
+    - sanity check
+    - check commits
 {% endfor %}
 {% endif %}

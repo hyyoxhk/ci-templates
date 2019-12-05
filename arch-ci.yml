@@ -21,6 +21,8 @@ variables:
   stage: arch_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 .arch:ci@container-ifnot-exists:
@@ -29,6 +31,8 @@ variables:
   stage: arch_container_build
   needs:
     - "bootstrap"
+    - sanity check
+    - check commits
 
 
 #
@@ -62,6 +66,8 @@ arch:rolling@check:
   image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_ID
   needs:
     - arch:rolling@container-build
+    - sanity check
+    - check commits
 
 
 #
@@ -79,6 +85,8 @@ arch-forced-ifnot-exists:rolling@check:
   image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_IID
   needs:
     - arch-forced:rolling@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -93,6 +101,8 @@ arch:rolling@container-ifnot-exists:
     ARCH_PKGS: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists
+    - sanity check
+    - check commits
 
 
 #
@@ -110,3 +120,5 @@ arch:rolling-upstream@container-ifnot-exists:
     ARCH_PKGS: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists
+    - sanity check
+    - check commits
