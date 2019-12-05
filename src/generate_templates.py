@@ -48,7 +48,12 @@ if __name__ == '__main__':
                     if key not in config:
                         config[key] = value
 
-            # store the geenrated values in the base config dictionnary
+                # add missing keys from the globals
+                for key, value in globs.items():
+                    if key not in config:
+                        config[key] = value
+
+            # store the generated values in the base config dictionnary
             config_data.update(data)
 
     # load our distribution template
@@ -91,6 +96,9 @@ if __name__ == '__main__':
     distribs = [d for d in sorted(config_data.keys()) if d not in ('defaults', 'globals')]
     dest = f'.gitlab-ci.yml'
 
+    config = {'distribs': distribs}
+    config.update(globs)
+
     print(f'generating {dest}')
     with open(dest, 'w') as out_stream:
-        template_general_ci.stream({'distribs': distribs}).dump(out_stream)
+        template_general_ci.stream(config).dump(out_stream)

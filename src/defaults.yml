@@ -132,3 +132,6 @@ globals:
     - '/bin/bash test/script.sh'
     - './test/script.sh'
     - 'sh test/script.sh'
+
+  ## @bootstrap_tag: the current image tag associated with this bootstrap image
+  bootstrap_tag: '2019-12-02'

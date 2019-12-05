@@ -85,16 +85,24 @@ stages:
   - fedora_check
   - ubuntu_container_build
   - ubuntu_check
-  - container_push
 
 
 #
-# We want those to fail as early as possible, so we are reusing the current
-# wayland/ci-templates/buildah:latest image
+# We want those to fail as early as possible, so we are using a plain fedora
+# image, and there is no need to run `dnf update` as we only need to run
+# one python script.
 #
-sanity check:
+
+.pip_install:
   stage: sanity check
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  image: fedora:31
+  before_script:
+    - curl https://bootstrap.pypa.io/get-pip.py -o /root/get-pip.py
+    - python3 /root/get-pip.py
+    - dnf install -y git-core
+
+sanity check:
+  extends: .pip_install
   script:
     - pip3 install --user jinja2 PyYAML
     - python3 ./src/generate_templates.py
@@ -108,8 +116,7 @@ sanity check:
 
 
 check commits:
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
-  stage: sanity check
+  extends: .pip_install
   script:
     - pip3 install GitPython
     - pip3 install pytest
@@ -134,37 +141,3 @@ bootstrap:
 
 bootstrap@arm64v8:
   extends: .bootstrap@arm64v8
-
-
-#
-# Everything went fine if this is run, we can promote the latest bootstrap
-# tag as latest
-#
-bootstrap-push@push:
-  stage: container_push
-  image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
-  script:
-    # log in to the registry
-    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-    # push the container image to the registry
-    - skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
-                  docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG
-                  docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:latest
-  variables:
-    GIT_STRATEGY: none
-  only:
-    refs:
-      - master
-
-
-bootstrap-push@arm64v8:
-  extends: bootstrap-push@push
-  image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
-  before_script:
-    - export ARCH="arm64v8/"
-  tags:
-    - aarch64
-  only:
-    refs:
-      - master

@@ -42,7 +42,7 @@
 
 
 .alpine@container-build:
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:2019-12-02
   stage: build
   before_script:
     # log in to the registry
@@ -119,7 +119,7 @@
 
 .alpine@container-build@arm64v8:
   extends: .alpine@container-build
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2019-12-02
   tags:
     - aarch64
 
@@ -169,6 +169,6 @@
 
 .alpine@container-ifnot-exists@arm64v8:
   extends: .alpine@container-ifnot-exists
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2019-12-02
   tags:
     - aarch64

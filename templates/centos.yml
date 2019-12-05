@@ -43,7 +43,7 @@
 
 
 .centos@container-build:
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:2019-12-02
   stage: build
   before_script:
     # log in to the registry

@@ -45,7 +45,7 @@
 
 
 .{{distribution}}@container-build:
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:{{ bootstrap_tag }}
   stage: build
   before_script:
     # log in to the registry
@@ -133,7 +133,7 @@
 
 .{{distribution}}@container-build@arm64v8:
   extends: .{{distribution}}@container-build
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:{{ bootstrap_tag }}
   tags:
     - aarch64
 {% endif %}
@@ -185,7 +185,7 @@
 
 .{{distribution}}@container-ifnot-exists@arm64v8:
   extends: .{{distribution}}@container-ifnot-exists
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:latest
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:{{ bootstrap_tag }}
   tags:
     - aarch64
 {% endif %}
