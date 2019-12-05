@@ -22,7 +22,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .arch:ci@container-ifnot-exists:
@@ -32,7 +31,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 #
@@ -67,7 +65,6 @@ arch:rolling@check:
   needs:
     - arch:rolling@container-build
     - sanity check
-    - check commits
 
 
 #
@@ -86,7 +83,6 @@ arch-forced-ifnot-exists:rolling@check:
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -102,7 +98,6 @@ arch:rolling@container-ifnot-exists:
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -121,4 +116,3 @@ arch:rolling-upstream@container-ifnot-exists:
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check
-    - check commits

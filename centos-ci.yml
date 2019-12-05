@@ -22,7 +22,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .centos:ci@container-ifnot-exists:
@@ -32,7 +31,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 #
@@ -68,7 +66,6 @@ centos:7@check:
   needs:
     - centos:7@container-build
     - sanity check
-    - check commits
 
 
 #
@@ -88,7 +85,6 @@ centos-forced-ifnot-exists:7@check:
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -105,7 +101,6 @@ centos:7@container-ifnot-exists:
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -125,7 +120,6 @@ centos:7-upstream@container-ifnot-exists:
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
-    - check commits
 
 #
 # Try our centos scripts with other versions and check
@@ -143,4 +137,3 @@ centos:8@check:
   needs:
     - centos:8@container-build
     - sanity check
-    - check commits

@@ -22,7 +22,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .fedora:ci@container-ifnot-exists:
@@ -32,7 +31,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .fedora:ci@container-build@arm64v8:
@@ -42,7 +40,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 
 
 .fedora:ci@container-ifnot-exists@arm64v8:
@@ -52,7 +49,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 
 #
 # generic fedora checks
@@ -87,7 +83,6 @@ fedora:30@check:
   needs:
     - fedora:30@container-build
     - sanity check
-    - check commits
 
 
 fedora:30@container-build@arm64v8:
@@ -105,7 +100,6 @@ fedora:30@check@arm64v8:
   needs:
     - fedora:30@container-build@arm64v8
     - sanity check
-    - check commits
 
 
 #
@@ -125,7 +119,6 @@ fedora-forced-ifnot-exists:30@check:
   needs:
     - fedora-forced:30@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -142,7 +135,6 @@ fedora:30@container-ifnot-exists:
   needs:
     - fedora-forced:30@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -162,7 +154,6 @@ fedora:30-upstream@container-ifnot-exists:
   needs:
     - fedora-forced:30@container-ifnot-exists
     - sanity check
-    - check commits
 
 #
 # Try our fedora scripts with other versions and check
@@ -180,7 +171,6 @@ fedora:29@check:
   needs:
     - fedora:29@container-build
     - sanity check
-    - check commits
 
 fedora:rawhide@container-build:
   extends: .fedora:ci@container-build
@@ -194,4 +184,3 @@ fedora:rawhide@check:
   needs:
     - fedora:rawhide@container-build
     - sanity check
-    - check commits

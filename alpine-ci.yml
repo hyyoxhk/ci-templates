@@ -22,7 +22,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .alpine:ci@container-ifnot-exists:
@@ -32,7 +31,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .alpine:ci@container-build@arm64v8:
@@ -42,7 +40,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 
 
 .alpine:ci@container-ifnot-exists@arm64v8:
@@ -52,7 +49,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 
 #
 # generic alpine checks
@@ -86,7 +82,6 @@ alpine:latest@check:
   needs:
     - alpine:latest@container-build
     - sanity check
-    - check commits
 
 
 alpine:latest@container-build@arm64v8:
@@ -103,7 +98,6 @@ alpine:latest@check@arm64v8:
   needs:
     - alpine:latest@container-build@arm64v8
     - sanity check
-    - check commits
 
 
 #
@@ -122,7 +116,6 @@ alpine-forced-ifnot-exists:latest@check:
   needs:
     - alpine-forced:latest@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -138,7 +131,6 @@ alpine:latest@container-ifnot-exists:
   needs:
     - alpine-forced:latest@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -157,4 +149,3 @@ alpine:latest-upstream@container-ifnot-exists:
   needs:
     - alpine-forced:latest@container-ifnot-exists
     - sanity check
-    - check commits

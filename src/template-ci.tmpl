@@ -26,7 +26,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 
 .{{distribution}}:ci@container-ifnot-exists:
@@ -36,7 +35,6 @@ variables:
   needs:
     - "bootstrap"
     - sanity check
-    - check commits
 
 {% if aarch64 %}
 
@@ -47,7 +45,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 
 
 .{{distribution}}:ci@container-ifnot-exists@arm64v8:
@@ -57,7 +54,6 @@ variables:
   needs:
     - "bootstrap@arm64v8"
     - sanity check
-    - check commits
 {% endif %}
 
 #
@@ -102,7 +98,6 @@ variables:
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build
     - sanity check
-    - check commits
 {% if aarch64 %}
 
 
@@ -123,7 +118,6 @@ variables:
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build@arm64v8
     - sanity check
-    - check commits
 {% endif %}
 
 
@@ -146,7 +140,6 @@ variables:
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -165,7 +158,6 @@ variables:
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
-    - check commits
 
 
 #
@@ -187,7 +179,6 @@ variables:
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
-    - check commits
 {% if versions[1:] %}
 
 #
@@ -207,6 +198,5 @@ variables:
   needs:
     - {{distribution}}:{{v}}@container-build
     - sanity check
-    - check commits
 {% endfor %}
 {% endif %}
