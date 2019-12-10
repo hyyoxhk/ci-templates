@@ -120,6 +120,19 @@ test_curl:
 
 For a more detailed documentation, have a look at the template you want to use.
 
+# Qemu
+
+Those templates are capable of generating a base container image that can run
+`qemu` directly in a privileged container with `/dev/kvm` access.
+
+Some helpers are available to start the produced VM in the container:
+- once the image is built, you can start it with `/app/start_vm.sh`
+- if you want to test a newly built kernel, you can use:
+  `/app/start_vm_kernel.sh my-new-kernel`
+
+(see https://gitlab.freedesktop.org/wayland/ci-templates/merge_requests/6 for an
+explanation on how we can produce the VM images).
+
 # Pain points when using templates
 
 ## registries are not pruned when you delete a tag
