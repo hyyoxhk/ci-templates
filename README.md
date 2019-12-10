@@ -122,12 +122,6 @@ For a more detailed documentation, have a look at the template you want to use.
 
 # Pain points when using templates
 
-## No sub levels includes
-
-As of gitlab v11.9, you can only use the `include` predicate at the root of the
-CI script. This explains why there is a lot of duplication in the various
-templates provided here.
-
 ## registries are not pruned when you delete a tag
 
 If you have 2 tags pointing at the same image, and you remove one of them, the
