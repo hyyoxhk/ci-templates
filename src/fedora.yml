@@ -2,8 +2,8 @@ fedora:
   distribution: fedora
   package_type: rpms
   versions:
+    - '31'
     - '30'
-    - '29'
     - rawhide
 
   upgrade:

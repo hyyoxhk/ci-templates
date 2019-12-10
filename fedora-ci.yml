@@ -118,87 +118,87 @@ variables:
 #
 # straight fedora build and test
 #
-fedora:30@container-build:
+fedora:31@container-build:
   extends: .fedora:ci@container-build
   variables:
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: $CI_PIPELINE_ID
 
 
-fedora:30@check:
+fedora:31@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/31:$CI_PIPELINE_ID
   needs:
-    - fedora:30@container-build
+    - fedora:31@container-build
     - sanity check
 
 
-fedora:30@container-build@arm64v8:
+fedora:31@container-build@arm64v8:
   extends: .fedora:ci@container-build@arm64v8
   variables:
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: arm64v8-$CI_PIPELINE_ID
 
 
-fedora:30@check@arm64v8:
+fedora:31@check@arm64v8:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/30:arm64v8-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/31:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
   needs:
-    - fedora:30@container-build@arm64v8
+    - fedora:31@container-build@arm64v8
     - sanity check
 
 
-fedora:30@qemu-build:
+fedora:31@qemu-build:
   extends: .fedora:ci@qemu-build
   variables:
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: qemu-$CI_PIPELINE_ID
     FEDORA_RPMS: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
-fedora:30@qemu-check:
+fedora:31@qemu-check:
   extends: .fedora@qemu-check
-  image: $CI_REGISTRY_IMAGE/fedora/30:qemu-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/31:qemu-$CI_PIPELINE_ID
   needs:
-    - fedora:30@qemu-build
+    - fedora:31@qemu-build
     - sanity check
 
 
 #
 # make sure we do rebuild the image if the tag does not exist and check
 #
-fedora-forced:30@container-ifnot-exists:
+fedora-forced:31@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: $CI_PIPELINE_IID
 
 
-fedora-forced-ifnot-exists:30@check:
+fedora-forced-ifnot-exists:31@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/fedora/31:$CI_PIPELINE_IID
   needs:
-    - fedora-forced:30@container-ifnot-exists
+    - fedora-forced:31@container-ifnot-exists
     - sanity check
 
 
 #
 # make sure we do not rebuild the image if the tag exists (during the check)
 #
-fedora:30@container-ifnot-exists:
+fedora:31@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exist'
   needs:
-    - fedora-forced:30@container-ifnot-exists
+    - fedora-forced:31@container-ifnot-exists
     - sanity check
 
 
@@ -207,34 +207,34 @@ fedora:30@container-ifnot-exists:
 # repository (during the check)
 # special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-fedora:30-upstream@container-ifnot-exists:
+fedora:31-upstream@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    FEDORA_VERSION: '30'
+    FEDORA_VERSION: '31'
     FEDORA_TAG: $CI_PIPELINE_IID
     FEDORA_RPMS: 'this-package-should-not-exist'
   needs:
-    - fedora-forced:30@container-ifnot-exists
+    - fedora-forced:31@container-ifnot-exists
     - sanity check
 
 #
 # Try our fedora scripts with other versions and check
 #
 
-fedora:29@container-build:
+fedora:30@container-build:
   extends: .fedora:ci@container-build
   variables:
-    FEDORA_VERSION: '29'
+    FEDORA_VERSION: '30'
     FEDORA_TAG: $CI_PIPELINE_ID
 
-fedora:29@check:
+fedora:30@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/29:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/30:$CI_PIPELINE_ID
   needs:
-    - fedora:29@container-build
+    - fedora:30@container-build
     - sanity check
 
 fedora:rawhide@container-build:
