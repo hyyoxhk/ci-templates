@@ -91,7 +91,7 @@
       git remote add origin $CI_REPOSITORY_URL ;
       git fetch --depth 1 origin $CI_COMMIT_SHA ;
       git checkout FETCH_HEAD  > /dev/null;
-      buildah config --workingdir /tmp/clone $buildcntr ;
+      buildah config --workingdir /tmp/clone --env HOME="$HOME" $buildcntr ;
       $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
       popd ;
       rm -rf $buildmnt/tmp/clone ;
