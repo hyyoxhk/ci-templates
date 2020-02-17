@@ -1,8 +1,9 @@
 ## This is the defaults file, that will be merged with the distribution
 ## specific YAML.
 ##
-## Given that each distribution might havedifferent default values, this file
-## is also processed by jinja before merging with the distribution configuration
+## Given that each distribution might have different default values, this
+## file is also processed by jinja before merging with the distribution
+## configuration
 ##
 
 ## The root level entry must be unique, but not necesseraly tied to a
@@ -82,7 +83,7 @@ defaults:
 
   ##############################################################################
 
-  ## The following variables are infered and don't need to be overwritten by
+  ## The following variables are inferred and don't need to be overwritten by
   ## the distributions
 
   ## @image: The base image to pull on docker
