@@ -43,7 +43,7 @@
   - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
   # check if our image is already in the current registry
-  - skopeo inspect docker://$CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
+  - skopeo inspect docker://$CI_REGISTRY_IMAGE/${ARCH}buildah:$BOOTSTRAP_TAG > /dev/null && exit 0 || true
 
   # https://gitlab.com/gitlab-com/support-forum/issues/4349
   - export BUILDAH_FORMAT=docker
