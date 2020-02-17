@@ -12,14 +12,14 @@
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
-#  - REPO_SUFFIX:    The repository name suffix after ".../{{docker_repo}}/".
+#  - REPO_SUFFIX:    The repository name suffix after ".../{{distribution}}/".
 #                    If this variable isn't defined, "{{VERSION}}" is used for
 #                    the suffix.
 #  - {{DISTRIBUTION}}_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/{{docker_repo}}/$REPO_SUFFIX:${{DISTRIBUTION}}_TAG
+#     $CI_REGISTRY_IMAGE/{{distribution}}/$REPO_SUFFIX:${{DISTRIBUTION}}_TAG
 #
 # Two flavors of templates are available:
 #   - `.{{distribution}}@container-build`: this will force rebuild a new container
@@ -34,7 +34,7 @@
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
-        export DISTRO={{docker_repo}}
+        export DISTRO={{distribution}}
         export DISTRO_TAG=${{DISTRIBUTION}}_TAG
         export DISTRO_VERSION={{VERSION}}
         export DISTRO_EXEC=${{DISTRIBUTION}}_EXEC

@@ -9,14 +9,14 @@
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
-#  - REPO_SUFFIX:    The repository name suffix after ".../archlinux/".
+#  - REPO_SUFFIX:    The repository name suffix after ".../arch/".
 #                    If this variable isn't defined, "rolling" is used for
 #                    the suffix.
 #  - ARCH_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/archlinux/$REPO_SUFFIX:$ARCH_TAG
+#     $CI_REGISTRY_IMAGE/arch/$REPO_SUFFIX:$ARCH_TAG
 #
 # Two flavors of templates are available:
 #   - `.arch@container-build`: this will force rebuild a new container
@@ -31,7 +31,7 @@
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
-        export DISTRO=archlinux
+        export DISTRO=arch
         export DISTRO_TAG=$ARCH_TAG
         export DISTRO_VERSION=rolling
         export DISTRO_EXEC=$ARCH_EXEC

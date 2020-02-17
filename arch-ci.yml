@@ -111,7 +111,7 @@ arch:rolling@container-build:
 
 arch:rolling@check:
   extends: .arch@check
-  image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/arch/rolling:$CI_PIPELINE_ID
   needs:
     - arch:rolling@container-build
     - sanity check
@@ -127,7 +127,7 @@ arch:rolling@qemu-build:
 
 arch:rolling@qemu-check:
   extends: .arch@qemu-check
-  image: $CI_REGISTRY_IMAGE/archlinux/rolling:qemu-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/arch/rolling:qemu-$CI_PIPELINE_ID
   needs:
     - arch:rolling@qemu-build
     - sanity check
@@ -145,7 +145,7 @@ arch-forced:rolling@container-ifnot-exists:
 
 arch-forced-ifnot-exists:rolling@check:
   extends: .arch@check
-  image: $CI_REGISTRY_IMAGE/archlinux/rolling:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/arch/rolling:$CI_PIPELINE_IID
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check

@@ -158,7 +158,7 @@ variables:
 
 {{distribution}}:{{ versions[0] }}@check:
   extends: .{{distribution}}@check
-  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{ versions[0] }}:$CI_PIPELINE_ID
   needs:
     - {{distribution}}:{{ versions[0] }}@container-build
     - sanity check
@@ -176,7 +176,7 @@ variables:
 
 {{distribution}}:{{ versions[0] }}@check@arm64v8:
   extends: .{{distribution}}@check
-  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:arm64v8-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{ versions[0] }}:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
   needs:
@@ -199,7 +199,7 @@ variables:
 
 {{distribution}}:{{ versions[0] }}@qemu-check:
   extends: .{{distribution}}@qemu-check
-  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:qemu-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{ versions[0] }}:qemu-$CI_PIPELINE_ID
   needs:
     - {{distribution}}:{{ versions[0] }}@qemu-build
     - sanity check
@@ -221,7 +221,7 @@ variables:
 
 {{distribution}}-forced-ifnot-exists:{{ versions[0] }}@check:
   extends: .{{distribution}}@check
-  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{ versions[0] }}:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{ versions[0] }}:$CI_PIPELINE_IID
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
@@ -279,7 +279,7 @@ variables:
 
 {{distribution}}:{{v}}@check:
   extends: .{{distribution}}@check
-  image: $CI_REGISTRY_IMAGE/{{docker_repo}}/{{v}}:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{v}}:$CI_PIPELINE_ID
   needs:
     - {{distribution}}:{{v}}@container-build
     - sanity check
