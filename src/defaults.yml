@@ -14,6 +14,9 @@
 ##   - `defaults`: this defines the defautl values for the templates
 ##   - `globals`: some global definitions
 defaults:
+  ## @warning: The warning to print at the top of each generated file
+  ##
+  warning: "THIS FILE IS GENERATED, DO NOT EDIT"
 
   ## @distribution: The distribution name
   ##
