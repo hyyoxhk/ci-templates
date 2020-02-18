@@ -9,11 +9,10 @@ cat > /app/start_vm.sh <<EOF
 #!/bin/bash
 
 set -x
-set -e
 
 if [[ ! -e /app/image.raw ]]
 then
-  xz -d -T0 /app/image.raw.xz
+  xz -d -T0 /app/image.raw.xz || (echo "Failed to unpack image" && exit 1)
 fi
 
 qemu-system-x86_64 -machine accel=kvm \\
@@ -26,8 +25,23 @@ qemu-system-x86_64 -machine accel=kvm \\
                    "\$@" \\
                    -serial file:\$CI_BUILDS_DIR/\$CI_PROJECT_PATH/console.out
 
-# store the host key locally
-ssh -o StrictHostKeyChecking=accept-new localhost -p 5555 uname -a
+exit_code=\$?
+
+# Connect once to store the host key locally
+if [[ \$exit_code -eq 0 ]]; then
+    ssh -o StrictHostKeyChecking=accept-new localhost -p 5555 uname -a
+    exit_code=\$?
+fi
+
+if [[ \$exit_code -ne 0 ]]; then
+   echo "***********************************************************"
+   echo "*                                                         *"
+   echo "*       WARNING: failed to start or connect to VM         *"
+   echo "*                                                         *"
+   echo "***********************************************************"
+fi
+
+exit \$exit_code
 
 EOF
 

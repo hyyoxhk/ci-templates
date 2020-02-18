@@ -68,7 +68,7 @@ include:
 
 variables:
   BOOTSTRAP_TAG: '2020-02-19'
-  QEMU_TAG: '2020-02-20'
+  QEMU_TAG: '2020-02-21'
 
 
 stages:
