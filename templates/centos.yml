@@ -48,13 +48,10 @@
 .fdo.container-build@centos:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-03-04
   stage: build
-  before_script:
-    # log in to the registry
-    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-    - *fdo_distro_vars
-
   script:
+    # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
   - *fdo_distro_vars
   - if [[ x"$DISTRO_TAG" == x"" ]] ;
     then

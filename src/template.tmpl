@@ -53,13 +53,10 @@
 .fdo.container-build@{{distribution}}:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:{{ bootstrap_tag }}
   stage: build
-  before_script:
-    # log in to the registry
-    - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-    - *fdo_distro_vars
-
   script:
+    # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
   - *fdo_distro_vars
   - if [[ x"$DISTRO_TAG" == x"" ]] ;
     then
@@ -152,6 +149,9 @@
     - kvm
   image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:{{ qemu_tag }}
   script:
+  # log in to the registry
+  - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
   - *fdo_distro_vars
 
   # start our current base mkosi image
