@@ -113,7 +113,7 @@ sanity check:
 
     - echo "some files were not generated through 'src/generate_templates.py' or
       have not been committed. Please edit the files under 'src', run
-      'src/generate_template.py' and then commit the result"
+      'src/generate_templates.py' and then commit the result"
     - exit 1
 
 
