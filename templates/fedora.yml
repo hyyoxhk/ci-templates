@@ -65,8 +65,8 @@
   - buildcntr=$(buildah from $DISTRO:$DISTRO_VERSION)
   - buildmnt=$(buildah mount $buildcntr)
 
-  - $BUILDAH_RUN $buildcntr dnf upgrade -y --nogpgcheck fedora-release fedora-repos*
-  - $BUILDAH_RUN $buildcntr dnf upgrade -y
+  - $BUILDAH_RUN $buildcntr dnf upgrade -y --setopt=install_weak_deps=False --nogpgcheck fedora-release fedora-repos*
+  - $BUILDAH_RUN $buildcntr dnf upgrade -y --setopt=install_weak_deps=False
 
   - if [[ x"$FEDORA_RPMS" != x"" ]] ;
     then

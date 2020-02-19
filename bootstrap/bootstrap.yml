@@ -27,7 +27,7 @@
   - export BUILDAH_RUN="buildah run --isolation chroot"
   - export BUILDAH_COMMIT="buildah commit --format docker"
   # install buildah, podman and skopeo
-  - dnf install -y buildah podman skopeo
+  - dnf install -y --setopt=install_weak_deps=False buildah podman skopeo
   - |
     cat > /etc/containers/storage.conf <<EOF
     [storage]
@@ -49,8 +49,8 @@
   - export BUILDAH_FORMAT=docker
 
   - buildcntr=$(buildah from ${ARCH}fedora:30)
-  - $BUILDAH_RUN $buildcntr dnf upgrade -y
-  - $BUILDAH_RUN $buildcntr dnf install -y buildah podman skopeo jq git
+  - $BUILDAH_RUN $buildcntr dnf upgrade --setopt=install_weak_deps=False -y
+  - $BUILDAH_RUN $buildcntr dnf install --setopt=install_weak_deps=False -y buildah podman skopeo jq git
     # do not store the packages database, it's pointless
   - $BUILDAH_RUN $buildcntr dnf clean all
 
