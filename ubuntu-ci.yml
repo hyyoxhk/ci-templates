@@ -120,87 +120,87 @@ variables:
 #
 # straight ubuntu build and test
 #
-ubuntu:18.10@container-build:
+ubuntu:19.10@container-build:
   extends: .ubuntu:ci@container-build
   variables:
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_ID
 
 
-ubuntu:18.10@check:
+ubuntu:19.10@check:
   extends: .ubuntu@check
-  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/ubuntu/19.10:$CI_PIPELINE_ID
   needs:
-    - ubuntu:18.10@container-build
+    - ubuntu:19.10@container-build
     - sanity check
 
 
-ubuntu:18.10@container-build@arm64v8:
+ubuntu:19.10@container-build@arm64v8:
   extends: .ubuntu:ci@container-build@arm64v8
   variables:
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: arm64v8-$CI_PIPELINE_ID
 
 
-ubuntu:18.10@check@arm64v8:
+ubuntu:19.10@check@arm64v8:
   extends: .ubuntu@check
-  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:arm64v8-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/ubuntu/19.10:arm64v8-$CI_PIPELINE_ID
   tags:
     - aarch64
   needs:
-    - ubuntu:18.10@container-build@arm64v8
+    - ubuntu:19.10@container-build@arm64v8
     - sanity check
 
 
-ubuntu:18.10@qemu-build:
+ubuntu:19.10@qemu-build:
   extends: .ubuntu:ci@qemu-build
   variables:
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: qemu-$CI_PIPELINE_ID
     UBUNTU_DEBS: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
-ubuntu:18.10@qemu-check:
+ubuntu:19.10@qemu-check:
   extends: .ubuntu@qemu-check
-  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:qemu-$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/ubuntu/19.10:qemu-$CI_PIPELINE_ID
   needs:
-    - ubuntu:18.10@qemu-build
+    - ubuntu:19.10@qemu-build
     - sanity check
 
 
 #
 # make sure we do rebuild the image if the tag does not exist and check
 #
-ubuntu-forced:18.10@container-ifnot-exists:
+ubuntu-forced:19.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
 
 
-ubuntu-forced-ifnot-exists:18.10@check:
+ubuntu-forced-ifnot-exists:19.10@check:
   extends: .ubuntu@check
-  image: $CI_REGISTRY_IMAGE/ubuntu/18.10:$CI_PIPELINE_IID
+  image: $CI_REGISTRY_IMAGE/ubuntu/19.10:$CI_PIPELINE_IID
   needs:
-    - ubuntu-forced:18.10@container-ifnot-exists
+    - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
 
 
 #
 # make sure we do not rebuild the image if the tag exists (during the check)
 #
-ubuntu:18.10@container-ifnot-exists:
+ubuntu:19.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   stage: ubuntu_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
     UBUNTU_DEBS: 'this-package-should-not-exist'
   needs:
-    - ubuntu-forced:18.10@container-ifnot-exists
+    - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
 
 
@@ -209,17 +209,17 @@ ubuntu:18.10@container-ifnot-exists:
 # repository (during the check)
 # special case where REPO_SUFFIX == ci_templates_test_upstream
 #
-ubuntu:18.10-upstream@container-ifnot-exists:
+ubuntu:19.10-upstream@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   stage: ubuntu_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    UBUNTU_VERSION: '18.10'
+    UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
     UBUNTU_DEBS: 'this-package-should-not-exist'
   needs:
-    - ubuntu-forced:18.10@container-ifnot-exists
+    - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
 
 #

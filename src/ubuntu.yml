@@ -2,7 +2,7 @@ ubuntu:
   distribution: ubuntu
   package_type: debs
   versions:
-    - '18.10'
+    - '19.10'
     - '18.04'
 
   prepare:
