@@ -4,7 +4,8 @@ fedora:
   versions:
     - '31'
     - '30'
-    - rawhide
+    - '32'
+    - '33' # rawhide
 
   upgrade:
     - dnf upgrade -y --nogpgcheck fedora-release fedora-repos*

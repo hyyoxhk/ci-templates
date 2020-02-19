@@ -4,7 +4,7 @@
 
 # This template will create a fedora image based on the following variables:
 #
-#  - FEDORA_VERSION: the fedora version (31, 30, rawhide, etc...)
+#  - FEDORA_VERSION: the fedora version (31, 30, 32, 33, etc...)
 #  - FEDORA_RPMS:    if set, list of packages that needs to be installed
 #  - FEDORA_EXEC:    if set, this command will be run once the packages have
 #                    been installed

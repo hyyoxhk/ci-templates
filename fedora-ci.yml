@@ -239,15 +239,28 @@ fedora:30@check:
     - fedora:30@container-build
     - sanity check
 
-fedora:rawhide@container-build:
+fedora:32@container-build:
   extends: .fedora:ci@container-build
   variables:
-    FEDORA_VERSION: 'rawhide'
+    FEDORA_VERSION: '32'
     FEDORA_TAG: $CI_PIPELINE_ID
 
-fedora:rawhide@check:
+fedora:32@check:
   extends: .fedora@check
-  image: $CI_REGISTRY_IMAGE/fedora/rawhide:$CI_PIPELINE_ID
+  image: $CI_REGISTRY_IMAGE/fedora/32:$CI_PIPELINE_ID
   needs:
-    - fedora:rawhide@container-build
+    - fedora:32@container-build
+    - sanity check
+
+fedora:33@container-build:
+  extends: .fedora:ci@container-build
+  variables:
+    FEDORA_VERSION: '33'
+    FEDORA_TAG: $CI_PIPELINE_ID
+
+fedora:33@check:
+  extends: .fedora@check
+  image: $CI_REGISTRY_IMAGE/fedora/33:$CI_PIPELINE_ID
+  needs:
+    - fedora:33@container-build
     - sanity check
