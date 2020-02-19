@@ -21,13 +21,14 @@
 # To avoid rebuilding this image at every run, and to give better control,
 # BOOTSTRAP_TAG needs to be set by the caller.
 .bootstrap:
-  image: fedora:latest
+  image: fedora:31
   stage: bootstrapping
   script:
   - export BUILDAH_RUN="buildah run --isolation chroot"
   - export BUILDAH_COMMIT="buildah commit --format docker"
   # install buildah, podman and skopeo
-  - dnf install -y --setopt=install_weak_deps=False buildah podman skopeo
+  # new versions of buildah/skopeo are not capable of running inside a container
+  - dnf install -y --setopt=install_weak_deps=False buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo
   - |
     cat > /etc/containers/storage.conf <<EOF
     [storage]
@@ -48,9 +49,10 @@
   # https://gitlab.com/gitlab-com/support-forum/issues/4349
   - export BUILDAH_FORMAT=docker
 
-  - buildcntr=$(buildah from ${ARCH}fedora:30)
+  - buildcntr=$(buildah from ${ARCH}fedora:31)
   - $BUILDAH_RUN $buildcntr dnf upgrade --setopt=install_weak_deps=False -y
-  - $BUILDAH_RUN $buildcntr dnf install --setopt=install_weak_deps=False -y buildah podman skopeo jq git
+  # new versions of buildah/skopeo are not capable of running inside a container
+  - $BUILDAH_RUN $buildcntr dnf install --setopt=install_weak_deps=False -y buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git
     # do not store the packages database, it's pointless
   - $BUILDAH_RUN $buildcntr dnf clean all
 
@@ -173,7 +175,7 @@
     FEDORA_VERSION: '31'
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-base
-    FEDORA_RPMS: 'buildah podman skopeo jq git qemu genisoimage usbutils'
+    FEDORA_RPMS: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     FEDORA_EXEC: 'bootstrap/prep_qemu.sh'
 
 # qemu container capable of creating an other VM image
@@ -186,5 +188,5 @@
     FEDORA_VERSION: '31'
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-mkosi-base
-    FEDORA_RPMS: 'buildah podman skopeo jq git qemu genisoimage usbutils'
+    FEDORA_RPMS: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     FEDORA_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'

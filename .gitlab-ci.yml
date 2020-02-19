@@ -67,8 +67,8 @@ include:
   - local: '/ubuntu-ci.yml'
 
 variables:
-  BOOTSTRAP_TAG: '2019-12-02'
-  QEMU_TAG: '2019-12-10'
+  BOOTSTRAP_TAG: '2020-02-19'
+  QEMU_TAG: '2020-02-19'
 
 
 stages:

@@ -154,7 +154,7 @@ globals:
     - 'sh test/script.sh'
 
   ## @bootstrap_tag: the current image tag associated with this bootstrap image
-  bootstrap_tag: '2019-12-02'
+  bootstrap_tag: '2020-02-19'
 
   ## @qemu_tag: the current image tag associated with this qemu bootstrap image
-  qemu_tag: '2019-12-10'
+  qemu_tag: '2020-02-19'

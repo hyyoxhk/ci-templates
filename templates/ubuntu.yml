@@ -45,7 +45,7 @@
 
 
 .ubuntu@container-build:
-  image: $CI_REGISTRY/wayland/ci-templates/buildah:2019-12-02
+  image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-02-19
   stage: build
   before_script:
     # log in to the registry
@@ -130,7 +130,7 @@
 
 .ubuntu@container-build@arm64v8:
   extends: .ubuntu@container-build
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2019-12-02
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2020-02-19
   tags:
     - aarch64
 
@@ -139,7 +139,7 @@
   extends: .ubuntu@container-build
   tags:
     - kvm
-  image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2019-12-10
+  image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2020-02-19
   script:
   - *distro_vars
 
@@ -275,7 +275,7 @@
     graphroot = "/var/lib/containers/storage"
     EOF
 
-  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:2019-12-10}
+  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:2020-02-19}
 
   - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $QEMU_BASE_IMAGE
 
@@ -380,7 +380,7 @@
 
 .ubuntu@container-ifnot-exists@arm64v8:
   extends: .ubuntu@container-ifnot-exists
-  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2019-12-02
+  image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2020-02-19
   tags:
     - aarch64
 
