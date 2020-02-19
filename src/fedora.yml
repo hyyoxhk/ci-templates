@@ -7,6 +7,7 @@ fedora:
     - rawhide
 
   upgrade:
+    - dnf upgrade -y --nogpgcheck fedora-release fedora-repos*
     - dnf upgrade -y
 
   install:
