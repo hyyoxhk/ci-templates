@@ -68,6 +68,13 @@ ssh localhost -p 5555 dnf install -y mkosi systemd-container
 # use the upstream mkosi code
 ssh localhost -p 5555 git clone https://github.com/systemd/mkosi.git
 
+# pacman needs 5.2.0 to work, fedora is still on 5.0.0
+# https://bugzilla.redhat.com/show_bug.cgi?id=1582967
+ssh localhost -p 5555 dnf install -y \
+	https://kojipkgs.fedoraproject.org//work/tasks/9076/41689076/pacman-5.2.1-1.fc31.x86_64.rpm \
+	https://kojipkgs.fedoraproject.org//work/tasks/9076/41689076/libalpm-5.2.1-1.fc31.x86_64.rpm \
+	https://kojipkgs.fedoraproject.org//work/tasks/9076/41689076/pacman-filesystem-5.2.1-1.fc31.noarch.rpm
+
 # stop the vm and compress the image file
 ssh localhost -p 5555 halt -p || true
 

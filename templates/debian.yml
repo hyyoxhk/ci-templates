@@ -140,7 +140,7 @@
   extends: .debian@container-build
   tags:
     - kvm
-  image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2020-02-19
+  image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2020-02-20
   script:
   - *distro_vars
 
@@ -231,7 +231,7 @@
     graphroot = "/var/lib/containers/storage"
     EOF
 
-  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:2020-02-19}
+  - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:2020-02-20}
 
   - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $QEMU_BASE_IMAGE
 
