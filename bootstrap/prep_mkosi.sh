@@ -70,7 +70,11 @@ ssh localhost -p 5555 git clone https://github.com/systemd/mkosi.git
 
 # stop the vm and compress the image file
 ssh localhost -p 5555 halt -p || true
-sleep 2
+
+while pgrep qemu
+do
+	sleep 2
+done
 
 # manually compress the image with `-T0` to use multithreading
 xz -T0 /app/image.raw
