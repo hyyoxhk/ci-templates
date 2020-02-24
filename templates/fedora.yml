@@ -16,6 +16,9 @@
 #                               "$FDO_DISTRIBUTION_VERSION" is used for the suffix.
 #  - FDO_DISTRIBUTION_TAG:      tag to copy the image from the upstream registry. If the
 #                               tag does not exist, create a new build and tag it
+#  - FDO_CACHE_DIR:             A directory that needs to be mounted as `/cache` during
+#                               $FDO_DISTRIBUTION_EXEC stage. Defaults to `/cache` from the
+#                               host, so that most users should not need this.
 #
 # The resulting image will be pushed in the local registry, under:
 #     $CI_REGISTRY_IMAGE/fedora/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
@@ -43,6 +46,7 @@
         fi
         export BUILDAH_RUN="buildah run --isolation chroot"
         export BUILDAH_COMMIT="buildah commit --format docker"
+        export CACHE_DIR=${FDO_CACHE_DIR:-/cache}
 
 
 .fdo.container-build@fedora:
@@ -83,7 +87,11 @@
       git fetch --depth 1 origin $CI_COMMIT_SHA ;
       git checkout FETCH_HEAD  > /dev/null;
       buildah config --workingdir /tmp/clone --env HOME="$HOME" $buildcntr ;
-      $BUILDAH_RUN $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
+      if [ -e $CACHE_DIR ] ;
+      then
+        CACHE="-v $CACHE_DIR:/cache:rw,shared,z" ;
+      fi ;
+      $BUILDAH_RUN $CACHE $buildcntr bash -c "set -x ; $DISTRO_EXEC" ;
       popd ;
       rm -rf $buildmnt/tmp/clone ;
       set +x ;

@@ -122,6 +122,59 @@ arch:rolling@check:
     - sanity check
 
 
+#
+# /cache arch check (in build stage)
+#
+arch@cache-container-build:
+  extends: .arch:ci@container-build
+  before_script:
+      # The template normally symlinks the /cache
+      # folder, but we want a fresh new one for the
+      # tests.
+    - mkdir runner_cache_$CI_PIPELINE_ID
+    - uname -a | tee runner_cache_$CI_PIPELINE_ID/foo-$CI_PIPELINE_ID
+
+  artifacts:
+    paths:
+      - runner_cache_$CI_PIPELINE_ID/*
+    expire_in: 1 week
+
+  variables:
+    FDO_DISTRIBUTION_TAG: cache-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_EXEC: 'bash test/test_cache.sh $CI_PIPELINE_ID'
+    FDO_CACHE_DIR: $CI_PROJECT_DIR/runner_cache_$CI_PIPELINE_ID
+
+
+#
+# /cache arch check (in check stage)
+#
+arch@cache-check:
+  stage: arch_check
+  image: alpine:latest
+  script:
+    # in the previous stage (arch@cache-container-build),
+    # test/test_cache.sh checked for the existance of `/cache/foo-$CI_PIPELINE_ID`
+    # and if it found it, it wrote `/cache/bar-$CI_PIPELINE_ID`.
+    #
+    # So if we have in the artifacts `bar-$CI_PIPELINE_ID`, that means
+    # 2 things:
+    # - /cache was properly mounted while building the container
+    # - the $FDO_CACHE_DIR has been properly written from within the
+    #   building container, meaning the /cache folder has been successfully
+    #   updated.
+    - if [ -e $CI_PROJECT_DIR/runner_cache_$CI_PIPELINE_ID/bar-$CI_PIPELINE_ID ] ;
+      then
+        echo Successfully read/wrote the cache folder, all good ;
+      else
+        echo FAILURE while retrieving the previous artifacts ;
+        exit 1 ;
+      fi
+  needs:
+    - job: arch@cache-container-build
+      artifacts: true
+    - sanity check
+
+
 arch:rolling@qemu-build:
   extends: .arch:ci@qemu-build
   variables:
