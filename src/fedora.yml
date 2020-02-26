@@ -17,8 +17,6 @@ fedora:
   clean:
     - dnf clean all
 
-  curl: true
-
   qemu_packages:
     - openssh-clients
     - openssh-server

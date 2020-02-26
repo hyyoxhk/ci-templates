@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  CENTOS_RPMS: 'wget'
+  CENTOS_RPMS: 'wget curl'
   CENTOS_EXEC: './test/script.sh'
 
 
@@ -41,8 +41,10 @@ variables:
 .centos@check:
   stage: centos_check
   script:
-      # make sure wget has been installed
-    - wget https://gitlab.freedesktop.org
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
+    - curl --insecure https://gitlab.freedesktop.org
+    - wget --no-check-certificate https://gitlab.freedesktop.org
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then

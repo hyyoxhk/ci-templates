@@ -71,13 +71,6 @@ defaults:
   ## boolean
   aarch64: true
 
-  ## @curl: Does the upstream ships curl?
-  ##
-  ## Used for generating the CI scripts
-  ## if true, the CI script will use wget instead (we need a package not in the
-  ## base image)
-  curl: false
-
   ## @qemu_packages: list of packages that are required on a base qemu image
   ##
   ## if this variable is not defined, the matching qemu template will not

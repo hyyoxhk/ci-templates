@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  ALPINE_PKGS: 'wget'
+  ALPINE_PKGS: 'wget curl'
   ALPINE_EXEC: '.hidden_dir/test.sh /test_file'
 
 
@@ -58,8 +58,10 @@ variables:
 .alpine@check:
   stage: alpine_check
   script:
-      # make sure wget has been installed
-    - wget https://gitlab.freedesktop.org
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
+    - curl --insecure https://gitlab.freedesktop.org
+    - wget --no-check-certificate https://gitlab.freedesktop.org
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then

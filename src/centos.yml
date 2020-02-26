@@ -17,5 +17,3 @@ centos:
     - $DNF clean all
 
   aarch64: false
-
-  curl: true

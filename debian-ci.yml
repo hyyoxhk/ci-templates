@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DEBIAN_DEBS: 'curl'
+  DEBIAN_DEBS: 'wget curl'
   DEBIAN_EXEC: 'sh test/script.sh'
 
 
@@ -75,8 +75,10 @@ variables:
 .debian@check:
   stage: debian_check
   script:
-      # make sure curl has been installed
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
     - curl --insecure https://gitlab.freedesktop.org
+    - wget --no-check-certificate https://gitlab.freedesktop.org
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
@@ -94,8 +96,10 @@ variables:
     - pushd /app
       # start the VM
     - bash /app/start_vm.sh
-      # make sure curl has been installed
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
     - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+    - ssh -p 5555 localhost wget --no-check-certificate https://gitlab.freedesktop.org
       # terminate the VM
     - ssh -p 5555 localhost halt -p || true
     - sleep 2
@@ -103,8 +107,9 @@ variables:
 
       # start the VM, with the kernel parameters
     - bash /app/start_vm_kernel.sh
-      # make sure we can still use curl
+      # make sure we can still use curl/wget
     - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
+    - ssh -p 5555 localhost wget --no-check-certificate https://gitlab.freedesktop.org
       # terminate the VM
     - ssh -p 5555 localhost halt -p || true
     - sleep 2

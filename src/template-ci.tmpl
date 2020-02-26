@@ -3,11 +3,7 @@
 # {{ warning }}
 
 variables:
-  {{PACKAGES}}: {% if curl -%}
-  'wget'
-  {% else -%}
-  'curl'
-  {% endif %}
+  {{PACKAGES}}: 'wget curl'
   {{DISTRIBUTION}}_EXEC: '{{ script }}'
 
 
@@ -83,13 +79,10 @@ variables:
 .{{distribution}}@check:
   stage: {{distribution}}_check
   script:
-{% if not curl %}
-      # make sure curl has been installed
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
     - curl --insecure https://gitlab.freedesktop.org
-{% else %}
-      # make sure wget has been installed
-    - wget https://gitlab.freedesktop.org
-{% endif %}
+    - wget --no-check-certificate https://gitlab.freedesktop.org
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
@@ -108,13 +101,10 @@ variables:
     - pushd /app
       # start the VM
     - bash /app/start_vm.sh
-{% if not curl %}
-      # make sure curl has been installed
+      # run both curl and wget because one of those two is installed and one is
+      # in the base image, but it depends on the distro which one
     - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
-{% else %}
-      # make sure wget has been installed
-    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
-{% endif %}
+    - ssh -p 5555 localhost wget --no-check-certificate https://gitlab.freedesktop.org
       # terminate the VM
     - ssh -p 5555 localhost halt -p || true
     - sleep 2
@@ -122,13 +112,9 @@ variables:
 
       # start the VM, with the kernel parameters
     - bash /app/start_vm_kernel.sh
-{% if not curl %}
-      # make sure we can still use curl
+      # make sure we can still use curl/wget
     - ssh -p 5555 localhost curl --insecure https://gitlab.freedesktop.org
-{% else %}
-      # make sure we can still use wget
-    - ssh -p 5555 localhost wget https://gitlab.freedesktop.org
-{% endif %}
+    - ssh -p 5555 localhost wget --no-check-certificate https://gitlab.freedesktop.org
       # terminate the VM
     - ssh -p 5555 localhost halt -p || true
     - sleep 2
