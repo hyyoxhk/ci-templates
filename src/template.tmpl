@@ -28,8 +28,8 @@
 #     only if ${{DISTRIBUTION}}_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
-# we can not reuse exported variables in after_script,
-# so have a common definition
+# we cannot reuse exported variables in after_script,
+# so let's have a common definition
 .{{distribution}}_vars: &distro_vars |
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349

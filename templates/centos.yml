@@ -26,8 +26,8 @@
 #     only if $CENTOS_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
-# we can not reuse exported variables in after_script,
-# so have a common definition
+# we cannot reuse exported variables in after_script,
+# so let's have a common definition
 .centos_vars: &distro_vars |
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349

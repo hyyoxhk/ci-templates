@@ -66,7 +66,7 @@ defaults:
   ## Mandatory
   clean: []
 
-  ## @aarch64: Does the upstream docker image is aarch64 capable
+  ## @aarch64: is the upstream docker image aarch64 capable
   ##
   ## boolean
   aarch64: true
@@ -114,7 +114,7 @@ defaults:
   VERSION: "{{version}}"
   {% endif %}
 
-  ## @version_examples: Examples of versionning you can have for a distro
+  ## @version_examples: Examples of versioning you can have for a distro
   ##
   ## This is purely to prettify the generated template, but will only
   ## be used if "version" is not defined in the YAML file.
