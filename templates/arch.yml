@@ -4,7 +4,7 @@
 
 # This template will create a arch image based on the following variables:
 #
-#  - ARCH_PKGS:    if set, list of packages that needs to be installed
+#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - ARCH_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -67,9 +67,9 @@
   - $BUILDAH_RUN $buildcntr pacman -S --refresh
   - $BUILDAH_RUN $buildcntr pacman -S --sysupgrade --noconfirm
 
-  - if [[ x"$ARCH_PKGS" != x"" ]] ;
+  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr pacman -S --noconfirm $ARCH_PKGS ;
+      $BUILDAH_RUN $buildcntr pacman -S --noconfirm $DISTRIBUTION_PACKAGES ;
     fi
 
     # check if there is an optional post install script and run it
@@ -159,7 +159,8 @@
       git
       sed
     EOF
-  - echo $ARCH_PKGS | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+
+  - echo $DISTRIBUTION_PACKAGES | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
 
   # create a new ssh key
   - ssh-keygen -t rsa -f /root/.ssh/id_rsa_target -N ''

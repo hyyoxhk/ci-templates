@@ -175,7 +175,7 @@
     FEDORA_VERSION: '31'
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-base
-    FEDORA_RPMS: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
+    DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     FEDORA_EXEC: 'bootstrap/prep_qemu.sh'
 
 # qemu container capable of creating an other VM image
@@ -188,5 +188,5 @@
     FEDORA_VERSION: '31'
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-mkosi-base
-    FEDORA_RPMS: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
+    DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     FEDORA_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'

@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  UBUNTU_DEBS: 'wget curl'
+  DISTRIBUTION_PACKAGES: 'wget curl'
   UBUNTU_EXEC: '/bin/bash test/script.sh'
 
 
@@ -162,7 +162,7 @@ ubuntu:19.10@qemu-build:
   variables:
     UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: qemu-$CI_PIPELINE_ID
-    UBUNTU_DEBS: 'wget curl'
+    DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -203,7 +203,7 @@ ubuntu:19.10@container-ifnot-exists:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
-    UBUNTU_DEBS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
@@ -222,7 +222,7 @@ ubuntu:19.10-upstream@container-ifnot-exists:
     REPO_SUFFIX: ci_templates_test_upstream
     UBUNTU_VERSION: '19.10'
     UBUNTU_TAG: $CI_PIPELINE_IID
-    UBUNTU_DEBS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check

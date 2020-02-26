@@ -100,10 +100,6 @@ defaults:
   docker_repo: "{{image.split('/')[0]}}"
   {% endif %}
 
-  ## @PACKAGES: the produced environment variable for the list of packages to
-  ##            install in the final container
-  PACKAGES: "{{DISTRIBUTION}}_{{PACKAGE_TYPE}}"
-
   ## @VERSION: the produced environment variable for $DISTRO_VERSION
   ##
   ## Note: this is a special case and "VERSION" can not be overwritten by

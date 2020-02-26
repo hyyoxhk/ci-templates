@@ -3,7 +3,7 @@
 # {{ warning }}
 
 variables:
-  {{PACKAGES}}: 'wget curl'
+  DISTRIBUTION_PACKAGES: 'wget curl'
   {{DISTRIBUTION}}_EXEC: '{{ script }}'
 
 
@@ -179,7 +179,7 @@ variables:
     {{VERSION.strip('$')}}: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: qemu-$CI_PIPELINE_ID
-    {{ PACKAGES }}: 'wget curl'
+    DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -225,7 +225,7 @@ variables:
     {{VERSION.strip('$')}}: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
-    {{ PACKAGES }}: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
@@ -246,7 +246,7 @@ variables:
     {{VERSION.strip('$')}}: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
-    {{ PACKAGES }}: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check

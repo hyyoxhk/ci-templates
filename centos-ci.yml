@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  CENTOS_RPMS: 'wget curl'
+  DISTRIBUTION_PACKAGES: 'wget curl'
   CENTOS_EXEC: './test/script.sh'
 
 
@@ -101,7 +101,7 @@ centos:7@container-ifnot-exists:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
-    CENTOS_RPMS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
@@ -120,7 +120,7 @@ centos:7-upstream@container-ifnot-exists:
     REPO_SUFFIX: ci_templates_test_upstream
     CENTOS_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
-    CENTOS_RPMS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check

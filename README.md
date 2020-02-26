@@ -108,7 +108,7 @@ container_build:
   variables:
     GIT_STRATEGY: none # no need to pull the whole tree for rebuilding the image
     # a list of packages to install
-    DEBIAN_DEBS: 'curl'
+    DISTRIBUTION_PACKAGES: 'curl'
 
 # TEST stage (is curl working?)
 test_curl:

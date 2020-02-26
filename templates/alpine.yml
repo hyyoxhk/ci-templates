@@ -4,7 +4,7 @@
 
 # This template will create a alpine image based on the following variables:
 #
-#  - ALPINE_PKGS:    if set, list of packages that needs to be installed
+#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - ALPINE_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -68,9 +68,9 @@
   - $BUILDAH_RUN $buildcntr apk upgrade
   - $BUILDAH_RUN $buildcntr apk add bash
 
-  - if [[ x"$ALPINE_PKGS" != x"" ]] ;
+  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr apk add $ALPINE_PKGS ;
+      $BUILDAH_RUN $buildcntr apk add $DISTRIBUTION_PACKAGES ;
     fi
 
     # check if there is an optional post install script and run it

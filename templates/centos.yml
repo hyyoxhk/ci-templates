@@ -5,7 +5,7 @@
 # This template will create a centos image based on the following variables:
 #
 #  - CENTOS_VERSION: the centos version (7, 8, etc...)
-#  - CENTOS_RPMS:    if set, list of packages that needs to be installed
+#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - CENTOS_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -68,9 +68,9 @@
   - $BUILDAH_RUN $buildcntr dnf --help >/dev/null 2>&1 && DNF=dnf || DNF=yum
   - $BUILDAH_RUN $buildcntr $DNF upgrade -y
 
-  - if [[ x"$CENTOS_RPMS" != x"" ]] ;
+  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr $DNF install -y $CENTOS_RPMS ;
+      $BUILDAH_RUN $buildcntr $DNF install -y $DISTRIBUTION_PACKAGES ;
     fi
 
     # check if there is an optional post install script and run it

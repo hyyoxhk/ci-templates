@@ -5,7 +5,7 @@
 # This template will create a debian image based on the following variables:
 #
 #  - DEBIAN_VERSION: the debian version (stretch, sid, buster, etc...)
-#  - DEBIAN_DEBS:    if set, list of packages that needs to be installed
+#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - DEBIAN_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -77,9 +77,9 @@
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get update
   - $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 
-  - if [[ x"$DEBIAN_DEBS" != x"" ]] ;
+  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y install $DEBIAN_DEBS ;
+      $BUILDAH_RUN $buildcntr env DEBIAN_FRONTEND=noninteractive apt-get -y install $DISTRIBUTION_PACKAGES ;
     fi
 
     # check if there is an optional post install script and run it
@@ -174,7 +174,8 @@
       iproute2
       git
     EOF
-  - echo $DEBIAN_DEBS | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+
+  - echo $DISTRIBUTION_PACKAGES | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
 
   # create a new ssh key
   - ssh-keygen -t rsa -f /root/.ssh/id_rsa_target -N ''

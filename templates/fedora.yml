@@ -5,7 +5,7 @@
 # This template will create a fedora image based on the following variables:
 #
 #  - FEDORA_VERSION: the fedora version (31, 30, 32, 33, etc...)
-#  - FEDORA_RPMS:    if set, list of packages that needs to be installed
+#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - FEDORA_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
@@ -68,9 +68,9 @@
   - $BUILDAH_RUN $buildcntr dnf upgrade -y --setopt=install_weak_deps=False --nogpgcheck fedora-release fedora-repos*
   - $BUILDAH_RUN $buildcntr dnf upgrade -y --setopt=install_weak_deps=False
 
-  - if [[ x"$FEDORA_RPMS" != x"" ]] ;
+  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
-      $BUILDAH_RUN $buildcntr dnf install -y $FEDORA_RPMS ;
+      $BUILDAH_RUN $buildcntr dnf install -y $DISTRIBUTION_PACKAGES ;
     fi
 
     # check if there is an optional post install script and run it
@@ -165,7 +165,8 @@
       iputils
       git-core
     EOF
-  - echo $FEDORA_RPMS | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+
+  - echo $DISTRIBUTION_PACKAGES | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
 
   # create a new ssh key
   - ssh-keygen -t rsa -f /root/.ssh/id_rsa_target -N ''

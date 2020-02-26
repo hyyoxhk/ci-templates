@@ -3,7 +3,7 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DEBIAN_DEBS: 'wget curl'
+  DISTRIBUTION_PACKAGES: 'wget curl'
   DEBIAN_EXEC: 'sh test/script.sh'
 
 
@@ -162,7 +162,7 @@ debian:stretch@qemu-build:
   variables:
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: qemu-$CI_PIPELINE_ID
-    DEBIAN_DEBS: 'wget curl'
+    DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -203,7 +203,7 @@ debian:stretch@container-ifnot-exists:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
-    DEBIAN_DEBS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - debian-forced:stretch@container-ifnot-exists
     - sanity check
@@ -222,7 +222,7 @@ debian:stretch-upstream@container-ifnot-exists:
     REPO_SUFFIX: ci_templates_test_upstream
     DEBIAN_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
-    DEBIAN_DEBS: 'this-package-should-not-exist'
+    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - debian-forced:stretch@container-ifnot-exists
     - sanity check
