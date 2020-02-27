@@ -77,7 +77,7 @@ variables:
 alpine:latest@container-build:
   extends: .alpine:ci@container-build
   variables:
-    ALPINE_TAG: $CI_PIPELINE_ID
+    DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 alpine:latest@check:
@@ -91,7 +91,7 @@ alpine:latest@check:
 alpine:latest@container-build@arm64v8:
   extends: .alpine:ci@container-build@arm64v8
   variables:
-    ALPINE_TAG: arm64v8-$CI_PIPELINE_ID
+    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 alpine:latest@check@arm64v8:
@@ -111,7 +111,7 @@ alpine-forced:latest@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    ALPINE_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 alpine-forced-ifnot-exists:latest@check:
@@ -130,7 +130,7 @@ alpine:latest@container-ifnot-exists:
   stage: alpine_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    ALPINE_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists
@@ -148,7 +148,7 @@ alpine:latest-upstream@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    ALPINE_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists

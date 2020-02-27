@@ -139,7 +139,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
+    DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 {{distribution}}:{{ versions[0] }}@check:
@@ -157,7 +157,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: arm64v8-$CI_PIPELINE_ID
+    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 {{distribution}}:{{ versions[0] }}@check@arm64v8:
@@ -178,7 +178,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: qemu-$CI_PIPELINE_ID
+    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
     DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
@@ -202,7 +202,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 {{distribution}}-forced-ifnot-exists:{{ versions[0] }}@check:
@@ -224,7 +224,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
@@ -245,7 +245,7 @@ variables:
 {% if not version %}
     DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
@@ -261,7 +261,7 @@ variables:
   extends: .{{distribution}}:ci@container-build
   variables:
     DISTRIBUTION_VERSION: '{{v}}'
-    {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
+    DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 {{distribution}}:{{v}}@check:
   extends: .{{distribution}}@check

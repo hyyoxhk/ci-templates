@@ -173,7 +173,7 @@
   dependencies: []
   variables:
     DISTRIBUTION_VERSION: '31'
-    FEDORA_TAG: $QEMU_TAG
+    DISTRIBUTION_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-base
     DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh'
@@ -186,7 +186,7 @@
     - kvm
   variables:
     DISTRIBUTION_VERSION: '31'
-    FEDORA_TAG: $QEMU_TAG
+    DISTRIBUTION_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-mkosi-base
     DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
     DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'

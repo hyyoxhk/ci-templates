@@ -111,7 +111,7 @@ variables:
 arch:rolling@container-build:
   extends: .arch:ci@container-build
   variables:
-    ARCH_TAG: $CI_PIPELINE_ID
+    DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 arch:rolling@check:
@@ -125,7 +125,7 @@ arch:rolling@check:
 arch:rolling@qemu-build:
   extends: .arch:ci@qemu-build
   variables:
-    ARCH_TAG: qemu-$CI_PIPELINE_ID
+    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
     DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
@@ -145,7 +145,7 @@ arch-forced:rolling@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    ARCH_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 arch-forced-ifnot-exists:rolling@check:
@@ -164,7 +164,7 @@ arch:rolling@container-ifnot-exists:
   stage: arch_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    ARCH_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists
@@ -182,7 +182,7 @@ arch:rolling-upstream@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    ARCH_TAG: $CI_PIPELINE_IID
+    DISTRIBUTION_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists

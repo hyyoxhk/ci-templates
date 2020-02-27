@@ -84,11 +84,11 @@ A simple example (using debian) would be:
 
 ```yaml
 variables:
-  # DEBIAN_TAG can be anything, what matters is that it is unique enough and
-  #            every change will rebuild a new image
-  DEBIAN_TAG: 2019-03-29-01
+  # DISTRIBUTION_TAG can be anything, what matters is that it is unique enough and
+  #                  every change will rebuild a new image
+  DISTRIBUTION_TAG: 2019-03-29-01
   DISTRIBUTION_VERSION: testing
-  TEST_IMAGE: "$CI_REGISTRY_IMAGE/debian/$DISTRIBUTION_VERSION:$DEBIAN_TAG"
+  TEST_IMAGE: "$CI_REGISTRY_IMAGE/debian/$DISTRIBUTION_VERSION:$DISTRIBUTION_TAG"
 
 # this is where the magic happens
 # `ref` can be a git sha or a git ref (master)

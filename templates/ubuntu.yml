@@ -13,17 +13,17 @@
 #  - REPO_SUFFIX:    The repository name suffix after ".../ubuntu/".
 #                    If this variable isn't defined, "$DISTRIBUTION_VERSION" is used for
 #                    the suffix.
-#  - UBUNTU_TAG:     tag to copy the image from the upstream registry. If the
+#  - DISTRIBUTION_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/ubuntu/$REPO_SUFFIX:$UBUNTU_TAG
+#     $CI_REGISTRY_IMAGE/ubuntu/$REPO_SUFFIX:$DISTRIBUTION_TAG
 #
 # Two flavors of templates are available:
 #   - `.ubuntu@container-build`: this will force rebuild a new container
-#     and tag it with $UBUNTU_TAG without checks
+#     and tag it with $DISTRIBUTION_TAG without checks
 #   - `.ubuntu@container-ifnot-exists`: this will rebuild a new container
-#     only if $UBUNTU_TAG is not available in the local registry or
+#     only if $DISTRIBUTION_TAG is not available in the local registry or
 #     in the $UPSTREAM_REPO registry
 
 # we cannot reuse exported variables in after_script,
@@ -33,7 +33,7 @@
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
         export DISTRO=ubuntu
-        export DISTRO_TAG=$UBUNTU_TAG
+        export DISTRO_TAG=$DISTRIBUTION_TAG
         export DISTRO_VERSION="$DISTRIBUTION_VERSION"
         export DISTRO_EXEC=$DISTRIBUTION_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
