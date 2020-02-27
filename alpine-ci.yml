@@ -4,7 +4,7 @@
 
 variables:
   DISTRIBUTION_PACKAGES: 'wget curl'
-  ALPINE_EXEC: '.hidden_dir/test.sh /test_file'
+  DISTRIBUTION_EXEC: '.hidden_dir/test.sh /test_file'
 
 
 ################################################################################
@@ -65,7 +65,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $ALPINE_EXEC properly run ;
+        echo $DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi

@@ -4,7 +4,7 @@
 
 variables:
   DISTRIBUTION_PACKAGES: 'wget curl'
-  DEBIAN_EXEC: 'sh test/script.sh'
+  DISTRIBUTION_EXEC: 'sh test/script.sh'
 
 
 ################################################################################
@@ -82,7 +82,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DEBIAN_EXEC properly run ;
+        echo $DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi

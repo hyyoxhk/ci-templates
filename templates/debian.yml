@@ -6,7 +6,7 @@
 #
 #  - DISTRIBUTION_VERSION: the debian version (stretch, sid, buster, etc...)
 #  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
-#  - DEBIAN_EXEC:    if set, this command will be run once the packages have
+#  - DISTRIBUTION_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
@@ -35,7 +35,7 @@
         export DISTRO=debian
         export DISTRO_TAG=$DEBIAN_TAG
         export DISTRO_VERSION="$DISTRIBUTION_VERSION"
-        export DISTRO_EXEC=$DEBIAN_EXEC
+        export DISTRO_EXEC=$DISTRIBUTION_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
         then
                 export REPO_SUFFIX=$DISTRO_VERSION

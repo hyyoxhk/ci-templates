@@ -4,7 +4,7 @@
 
 variables:
   DISTRIBUTION_PACKAGES: 'wget curl'
-  ARCH_EXEC: '/bin/bash test/script.sh'
+  DISTRIBUTION_EXEC: '/bin/bash test/script.sh'
 
 
 ################################################################################
@@ -65,7 +65,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $ARCH_EXEC properly run ;
+        echo $DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi

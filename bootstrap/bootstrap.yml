@@ -176,7 +176,7 @@
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-base
     DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
-    FEDORA_EXEC: 'bootstrap/prep_qemu.sh'
+    DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh'
 
 # qemu container capable of creating an other VM image
 #
@@ -189,4 +189,4 @@
     FEDORA_TAG: $QEMU_TAG
     REPO_SUFFIX: qemu-mkosi-base
     DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
-    FEDORA_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'
+    DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'
