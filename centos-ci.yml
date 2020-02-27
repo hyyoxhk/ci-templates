@@ -60,7 +60,7 @@ variables:
 centos:7@container-build:
   extends: .centos:ci@container-build
   variables:
-    CENTOS_VERSION: '7'
+    DISTRIBUTION_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_ID
 
 
@@ -79,7 +79,7 @@ centos-forced:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    CENTOS_VERSION: '7'
+    DISTRIBUTION_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
 
 
@@ -99,7 +99,7 @@ centos:7@container-ifnot-exists:
   stage: centos_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    CENTOS_VERSION: '7'
+    DISTRIBUTION_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
@@ -118,7 +118,7 @@ centos:7-upstream@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    CENTOS_VERSION: '7'
+    DISTRIBUTION_VERSION: '7'
     CENTOS_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
@@ -132,7 +132,7 @@ centos:7-upstream@container-ifnot-exists:
 centos:8@container-build:
   extends: .centos:ci@container-build
   variables:
-    CENTOS_VERSION: '8'
+    DISTRIBUTION_VERSION: '8'
     CENTOS_TAG: $CI_PIPELINE_ID
 
 centos:8@check:

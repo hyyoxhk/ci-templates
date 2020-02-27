@@ -10,7 +10,7 @@
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../arch/".
-#                    If this variable isn't defined, "rolling" is used for
+#                    If this variable isn't defined, "$DISTRIBUTION_VERSION" is used for
 #                    the suffix.
 #  - ARCH_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
@@ -33,7 +33,7 @@
         export BUILDAH_FORMAT=docker
         export DISTRO=arch
         export DISTRO_TAG=$ARCH_TAG
-        export DISTRO_VERSION=rolling
+        export DISTRO_VERSION="rolling"
         export DISTRO_EXEC=$ARCH_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
         then
@@ -131,7 +131,7 @@
   # start our current base mkosi image
   - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
 
-  - QEMU_VERSION=rolling
+  - QEMU_VERSION=$DISTRIBUTION_VERSION
 
   - |
     cat <<EOF > mkosi.default

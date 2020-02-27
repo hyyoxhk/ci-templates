@@ -5,7 +5,7 @@
 # This template will create a {{distribution}} image based on the following variables:
 #
 {% if not version %}
-#  - {{DISTRIBUTION}}_VERSION: the {{distribution}} version ({{version_examples}}, etc...)
+#  - DISTRIBUTION_VERSION: the {{distribution}} version ({{version_examples}}, etc...)
 {% endif %}
 #  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - {{DISTRIBUTION}}_EXEC:    if set, this command will be run once the packages have
@@ -13,7 +13,7 @@
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../{{distribution}}/".
-#                    If this variable isn't defined, "{{VERSION}}" is used for
+#                    If this variable isn't defined, "$DISTRIBUTION_VERSION" is used for
 #                    the suffix.
 #  - {{DISTRIBUTION}}_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
@@ -36,7 +36,11 @@
         export BUILDAH_FORMAT=docker
         export DISTRO={{distribution}}
         export DISTRO_TAG=${{DISTRIBUTION}}_TAG
-        export DISTRO_VERSION={{VERSION}}
+{% if not version %}
+        export DISTRO_VERSION="$DISTRIBUTION_VERSION"
+{% else %}
+        export DISTRO_VERSION="{{version}}"
+{% endif %}
         export DISTRO_EXEC=${{DISTRIBUTION}}_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
         then
@@ -153,7 +157,7 @@
   # start our current base mkosi image
   - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
 
-  - QEMU_VERSION={{VERSION}}
+  - QEMU_VERSION=$DISTRIBUTION_VERSION
 {% if ubuntu_versions %}
 
   # for ubuntu, we need to use the name, not the number
@@ -162,9 +166,9 @@
     {% for key, value in ubuntu_versions.items() %}
     versions["{{key}}"]={{value.lower()}}
     {% endfor %}
-  - if [[ x"${versions[{{VERSION}}]}" != x"" ]] ;
+  - if [[ x"${versions[$DISTRIBUTION_VERSION]}" != x"" ]] ;
     then
-      QEMU_VERSION=${versions["{{VERSION}}"]} ;
+      QEMU_VERSION=${versions["$DISTRIBUTION_VERSION"]} ;
     fi
 {% endif %}
 

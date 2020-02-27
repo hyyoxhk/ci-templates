@@ -4,14 +4,14 @@
 
 # This template will create a debian image based on the following variables:
 #
-#  - DEBIAN_VERSION: the debian version (stretch, sid, buster, etc...)
+#  - DISTRIBUTION_VERSION: the debian version (stretch, sid, buster, etc...)
 #  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
 #  - DEBIAN_EXEC:    if set, this command will be run once the packages have
 #                    been installed
 #  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
 #                    find the given tag (for example: `wayland/weston`)
 #  - REPO_SUFFIX:    The repository name suffix after ".../debian/".
-#                    If this variable isn't defined, "$DEBIAN_VERSION" is used for
+#                    If this variable isn't defined, "$DISTRIBUTION_VERSION" is used for
 #                    the suffix.
 #  - DEBIAN_TAG:     tag to copy the image from the upstream registry. If the
 #                    tag does not exist, create a new build and tag it
@@ -34,7 +34,7 @@
         export BUILDAH_FORMAT=docker
         export DISTRO=debian
         export DISTRO_TAG=$DEBIAN_TAG
-        export DISTRO_VERSION=$DEBIAN_VERSION
+        export DISTRO_VERSION="$DISTRIBUTION_VERSION"
         export DISTRO_EXEC=$DEBIAN_EXEC
         if [ x"$REPO_SUFFIX" == x"" ] ;
         then
@@ -147,7 +147,7 @@
   # start our current base mkosi image
   - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
 
-  - QEMU_VERSION=$DEBIAN_VERSION
+  - QEMU_VERSION=$DISTRIBUTION_VERSION
 
   - |
     cat <<EOF > mkosi.default

@@ -128,7 +128,7 @@ variables:
 debian:stretch@container-build:
   extends: .debian:ci@container-build
   variables:
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_ID
 
 
@@ -143,7 +143,7 @@ debian:stretch@check:
 debian:stretch@container-build@arm64v8:
   extends: .debian:ci@container-build@arm64v8
   variables:
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: arm64v8-$CI_PIPELINE_ID
 
 
@@ -160,7 +160,7 @@ debian:stretch@check@arm64v8:
 debian:stretch@qemu-build:
   extends: .debian:ci@qemu-build
   variables:
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: qemu-$CI_PIPELINE_ID
     DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
@@ -181,7 +181,7 @@ debian-forced:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
 
 
@@ -201,7 +201,7 @@ debian:stretch@container-ifnot-exists:
   stage: debian_check
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
@@ -220,7 +220,7 @@ debian:stretch-upstream@container-ifnot-exists:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
-    DEBIAN_VERSION: 'stretch'
+    DISTRIBUTION_VERSION: 'stretch'
     DEBIAN_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
@@ -234,7 +234,7 @@ debian:stretch-upstream@container-ifnot-exists:
 debian:sid@container-build:
   extends: .debian:ci@container-build
   variables:
-    DEBIAN_VERSION: 'sid'
+    DISTRIBUTION_VERSION: 'sid'
     DEBIAN_TAG: $CI_PIPELINE_ID
 
 debian:sid@check:
@@ -247,7 +247,7 @@ debian:sid@check:
 debian:buster@container-build:
   extends: .debian:ci@container-build
   variables:
-    DEBIAN_VERSION: 'buster'
+    DISTRIBUTION_VERSION: 'buster'
     DEBIAN_TAG: $CI_PIPELINE_ID
 
 debian:buster@check:

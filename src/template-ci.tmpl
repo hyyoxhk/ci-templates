@@ -137,7 +137,7 @@ variables:
   extends: .{{distribution}}:ci@container-build
   variables:
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
 
@@ -155,7 +155,7 @@ variables:
   extends: .{{distribution}}:ci@container-build@arm64v8
   variables:
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: arm64v8-$CI_PIPELINE_ID
 
@@ -176,7 +176,7 @@ variables:
   extends: .{{distribution}}:ci@qemu-build
   variables:
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: qemu-$CI_PIPELINE_ID
     DISTRIBUTION_PACKAGES: 'wget curl'
@@ -200,7 +200,7 @@ variables:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
 
@@ -222,7 +222,7 @@ variables:
   variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
@@ -243,7 +243,7 @@ variables:
     UPSTREAM_REPO: $CI_PROJECT_PATH
     REPO_SUFFIX: ci_templates_test_upstream
 {% if not version %}
-    {{VERSION.strip('$')}}: '{{ versions[0] }}'
+    DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_IID
     DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
@@ -260,7 +260,7 @@ variables:
 {{distribution}}:{{v}}@container-build:
   extends: .{{distribution}}:ci@container-build
   variables:
-    {{VERSION.strip('$')}}: '{{v}}'
+    DISTRIBUTION_VERSION: '{{v}}'
     {{DISTRIBUTION}}_TAG: $CI_PIPELINE_ID
 
 {{distribution}}:{{v}}@check:
