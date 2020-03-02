@@ -31,6 +31,7 @@ stages:
   - {{ distribution }}_container_build
   - {{ distribution }}_check
 {% endfor %}
+  - pages
 
 
 #
@@ -80,6 +81,16 @@ check commits:
     reports:
       junit: results.xml
 
+pages:
+  extends: .pip_install
+  stage: pages
+  script:
+  - pip3 install sphinx sphinx-rtd-theme
+  - bash -x doc/build-docs.sh
+  - mv build/html public
+  artifacts:
+    paths:
+    - public
 
 bootstrap:
   extends: .bootstrap
