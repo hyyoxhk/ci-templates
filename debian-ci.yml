@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .debian:ci@container-build:
-  extends: .fdo.debian@container-build
+  extends: .fdo.container-build@debian
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .debian:ci@container-ifnot-exists:
-  extends: .fdo.debian@container-ifnot-exists
+  extends: .fdo.container-ifnot-exists@debian
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .debian:ci@container-build@arm64v8:
-  extends: .fdo.debian@container-build@arm64v8
+  extends: .fdo.container-build@debian@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .debian:ci@container-ifnot-exists@arm64v8:
-  extends: .fdo.debian@container-ifnot-exists@arm64v8
+  extends: .fdo.container-ifnot-exists@debian@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -56,7 +56,7 @@ variables:
 # Qemu build
 #
 .debian:ci@qemu-build:
-  extends: .fdo.debian@qemu-build
+  extends: .fdo.qemu-build@debian
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: debian_container_build
   artifacts:

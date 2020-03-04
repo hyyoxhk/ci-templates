@@ -20,9 +20,9 @@
 #     $CI_REGISTRY_IMAGE/arch/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
 #
 # Two flavors of templates are available:
-#   - `.fdo.arch@container-build`: this will force rebuild a new container
+#   - `.fdo.container-build@arch`: this will force rebuild a new container
 #     and tag it with $FDO_DISTRIBUTION_TAG without checks
-#   - `.fdo.arch@container-ifnot-exists`: this will rebuild a new container
+#   - `.fdo.container-ifnot-exists@arch`: this will rebuild a new container
 #     only if $FDO_DISTRIBUTION_TAG is not available in the local registry or
 #     in the $FDO_UPSTREAM_REPO registry
 
@@ -44,7 +44,7 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-.fdo.arch@container-build:
+.fdo.container-build@arch:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-03-04
   stage: build
   before_script:
@@ -121,8 +121,8 @@
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
 
 
-.fdo.arch@qemu-build:
-  extends: .fdo.arch@container-build
+.fdo.qemu-build@arch:
+  extends: .fdo.container-build@arch
   tags:
     - kvm
   image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2020-03-04
@@ -316,11 +316,11 @@
       fi
 
 
-.fdo.arch@container-ifnot-exists:
-  extends: .fdo.arch@container-build
+.fdo.container-ifnot-exists@arch:
+  extends: .fdo.container-build@arch
   <<: *fdo_before_script_ifnot_exists
 
-.fdo.arch@qemu-ifnot-exists:
-  extends: .fdo.arch@qemu-build
+.fdo.qemu-ifnot-exists@arch:
+  extends: .fdo.qemu-build@arch
   <<: *fdo_before_script_ifnot_exists
 

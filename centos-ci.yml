@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .centos:ci@container-build:
-  extends: .fdo.centos@container-build
+  extends: .fdo.container-build@centos
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .centos:ci@container-ifnot-exists:
-  extends: .fdo.centos@container-ifnot-exists
+  extends: .fdo.container-ifnot-exists@centos
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
   needs:

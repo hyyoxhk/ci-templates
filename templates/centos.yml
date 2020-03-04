@@ -21,9 +21,9 @@
 #     $CI_REGISTRY_IMAGE/centos/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
 #
 # Two flavors of templates are available:
-#   - `.fdo.centos@container-build`: this will force rebuild a new container
+#   - `.fdo.container-build@centos`: this will force rebuild a new container
 #     and tag it with $FDO_DISTRIBUTION_TAG without checks
-#   - `.fdo.centos@container-ifnot-exists`: this will rebuild a new container
+#   - `.fdo.container-ifnot-exists@centos`: this will rebuild a new container
 #     only if $FDO_DISTRIBUTION_TAG is not available in the local registry or
 #     in the $FDO_UPSTREAM_REPO registry
 
@@ -45,7 +45,7 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-.fdo.centos@container-build:
+.fdo.container-build@centos:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-03-04
   stage: build
   before_script:
@@ -161,6 +161,6 @@
       fi
 
 
-.fdo.centos@container-ifnot-exists:
-  extends: .fdo.centos@container-build
+.fdo.container-ifnot-exists@centos:
+  extends: .fdo.container-build@centos
   <<: *fdo_before_script_ifnot_exists

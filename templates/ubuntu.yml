@@ -21,9 +21,9 @@
 #     $CI_REGISTRY_IMAGE/ubuntu/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
 #
 # Two flavors of templates are available:
-#   - `.fdo.ubuntu@container-build`: this will force rebuild a new container
+#   - `.fdo.container-build@ubuntu`: this will force rebuild a new container
 #     and tag it with $FDO_DISTRIBUTION_TAG without checks
-#   - `.fdo.ubuntu@container-ifnot-exists`: this will rebuild a new container
+#   - `.fdo.container-ifnot-exists@ubuntu`: this will rebuild a new container
 #     only if $FDO_DISTRIBUTION_TAG is not available in the local registry or
 #     in the $FDO_UPSTREAM_REPO registry
 
@@ -45,7 +45,7 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-.fdo.ubuntu@container-build:
+.fdo.container-build@ubuntu:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-03-04
   stage: build
   before_script:
@@ -129,15 +129,15 @@
   - sleep 2
   - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
 
-.fdo.ubuntu@container-build@arm64v8:
-  extends: .fdo.ubuntu@container-build
+.fdo.container-build@ubuntu@arm64v8:
+  extends: .fdo.container-build@ubuntu
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2020-03-04
   tags:
     - aarch64
 
 
-.fdo.ubuntu@qemu-build:
-  extends: .fdo.ubuntu@container-build
+.fdo.qemu-build@ubuntu:
+  extends: .fdo.container-build@ubuntu
   tags:
     - kvm
   image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:2020-03-04
@@ -375,18 +375,18 @@
       fi
 
 
-.fdo.ubuntu@container-ifnot-exists:
-  extends: .fdo.ubuntu@container-build
+.fdo.container-ifnot-exists@ubuntu:
+  extends: .fdo.container-build@ubuntu
   <<: *fdo_before_script_ifnot_exists
 
 
-.fdo.ubuntu@container-ifnot-exists@arm64v8:
-  extends: .fdo.ubuntu@container-ifnot-exists
+.fdo.container-ifnot-exists@ubuntu@arm64v8:
+  extends: .fdo.container-ifnot-exists@ubuntu
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2020-03-04
   tags:
     - aarch64
 
-.fdo.ubuntu@qemu-ifnot-exists:
-  extends: .fdo.ubuntu@qemu-build
+.fdo.qemu-ifnot-exists@ubuntu:
+  extends: .fdo.qemu-build@ubuntu
   <<: *fdo_before_script_ifnot_exists
 

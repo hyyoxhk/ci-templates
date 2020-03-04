@@ -167,7 +167,7 @@
 # - genisoimage (to create a cloud-init iso that will help us filling in the custom parameters)
 # - usbutils (for being able to call lsusb and redirect part a USB device)
 .qemu:
-  extends: .fdo.fedora@container-ifnot-exists
+  extends: .fdo.container-ifnot-exists@fedora
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: bootstrapping_qemu
   dependencies: []

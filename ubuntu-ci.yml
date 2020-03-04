@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .ubuntu:ci@container-build:
-  extends: .fdo.ubuntu@container-build
+  extends: .fdo.container-build@ubuntu
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .ubuntu:ci@container-ifnot-exists:
-  extends: .fdo.ubuntu@container-ifnot-exists
+  extends: .fdo.container-ifnot-exists@ubuntu
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .ubuntu:ci@container-build@arm64v8:
-  extends: .fdo.ubuntu@container-build@arm64v8
+  extends: .fdo.container-build@ubuntu@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .ubuntu:ci@container-ifnot-exists@arm64v8:
-  extends: .fdo.ubuntu@container-ifnot-exists@arm64v8
+  extends: .fdo.container-ifnot-exists@ubuntu@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -56,7 +56,7 @@ variables:
 # Qemu build
 #
 .ubuntu:ci@qemu-build:
-  extends: .fdo.ubuntu@qemu-build
+  extends: .fdo.qemu-build@ubuntu
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: ubuntu_container_build
   artifacts:

@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .arch:ci@container-build:
-  extends: .fdo.arch@container-build
+  extends: .fdo.container-build@arch
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .arch:ci@container-ifnot-exists:
-  extends: .fdo.arch@container-ifnot-exists
+  extends: .fdo.container-ifnot-exists@arch
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
@@ -39,7 +39,7 @@ variables:
 # Qemu build
 #
 .arch:ci@qemu-build:
-  extends: .fdo.arch@qemu-build
+  extends: .fdo.qemu-build@arch
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: arch_container_build
   artifacts:
