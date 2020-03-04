@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: '.hidden_dir/test.sh /test_file'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: '.hidden_dir/test.sh /test_file'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .fedora:ci@container-build:
-  extends: .fedora@container-build
+  extends: .fdo.fedora@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .fedora:ci@container-ifnot-exists:
-  extends: .fedora@container-ifnot-exists
+  extends: .fdo.fedora@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .fedora:ci@container-build@arm64v8:
-  extends: .fedora@container-build@arm64v8
+  extends: .fdo.fedora@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .fedora:ci@container-ifnot-exists@arm64v8:
-  extends: .fedora@container-ifnot-exists@arm64v8
+  extends: .fdo.fedora@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: fedora_container_build
   needs:
@@ -56,7 +56,7 @@ variables:
 # Qemu build
 #
 .fedora:ci@qemu-build:
-  extends: .fedora@qemu-build
+  extends: .fdo.fedora@qemu-build
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: fedora_container_build
   artifacts:
@@ -82,7 +82,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -128,8 +128,8 @@ variables:
 fedora:31@container-build:
   extends: .fedora:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 fedora:31@check:
@@ -143,8 +143,8 @@ fedora:31@check:
 fedora:31@container-build@arm64v8:
   extends: .fedora:ci@container-build@arm64v8
   variables:
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 fedora:31@check@arm64v8:
@@ -160,9 +160,9 @@ fedora:31@check@arm64v8:
 fedora:31@qemu-build:
   extends: .fedora:ci@qemu-build
   variables:
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
-    DISTRIBUTION_PACKAGES: 'wget curl'
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -180,9 +180,9 @@ fedora:31@qemu-check:
 fedora-forced:31@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 fedora-forced-ifnot-exists:31@check:
@@ -200,10 +200,10 @@ fedora:31@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - fedora-forced:31@container-ifnot-exists
     - sanity check
@@ -212,17 +212,17 @@ fedora:31@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 fedora:31-upstream@container-ifnot-exists:
   extends: .fedora:ci@container-ifnot-exists
   stage: fedora_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - fedora-forced:31@container-ifnot-exists
     - sanity check
@@ -234,8 +234,8 @@ fedora:31-upstream@container-ifnot-exists:
 fedora:30@container-build:
   extends: .fedora:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '30'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '30'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 fedora:30@check:
   extends: .fedora@check
@@ -247,8 +247,8 @@ fedora:30@check:
 fedora:32@container-build:
   extends: .fedora:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '32'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '32'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 fedora:32@check:
   extends: .fedora@check
@@ -260,8 +260,8 @@ fedora:32@check:
 fedora:33@container-build:
   extends: .fedora:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '33'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '33'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 fedora:33@check:
   extends: .fedora@check

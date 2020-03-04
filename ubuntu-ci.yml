@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: '/bin/bash test/script.sh'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: '/bin/bash test/script.sh'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .ubuntu:ci@container-build:
-  extends: .ubuntu@container-build
+  extends: .fdo.ubuntu@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .ubuntu:ci@container-ifnot-exists:
-  extends: .ubuntu@container-ifnot-exists
+  extends: .fdo.ubuntu@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .ubuntu:ci@container-build@arm64v8:
-  extends: .ubuntu@container-build@arm64v8
+  extends: .fdo.ubuntu@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .ubuntu:ci@container-ifnot-exists@arm64v8:
-  extends: .ubuntu@container-ifnot-exists@arm64v8
+  extends: .fdo.ubuntu@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: ubuntu_container_build
   needs:
@@ -56,7 +56,7 @@ variables:
 # Qemu build
 #
 .ubuntu:ci@qemu-build:
-  extends: .ubuntu@qemu-build
+  extends: .fdo.ubuntu@qemu-build
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: ubuntu_container_build
   artifacts:
@@ -82,7 +82,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -128,8 +128,8 @@ variables:
 ubuntu:19.10@container-build:
   extends: .ubuntu:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 ubuntu:19.10@check:
@@ -143,8 +143,8 @@ ubuntu:19.10@check:
 ubuntu:19.10@container-build@arm64v8:
   extends: .ubuntu:ci@container-build@arm64v8
   variables:
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 ubuntu:19.10@check@arm64v8:
@@ -160,9 +160,9 @@ ubuntu:19.10@check@arm64v8:
 ubuntu:19.10@qemu-build:
   extends: .ubuntu:ci@qemu-build
   variables:
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
-    DISTRIBUTION_PACKAGES: 'wget curl'
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -180,9 +180,9 @@ ubuntu:19.10@qemu-check:
 ubuntu-forced:19.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 ubuntu-forced-ifnot-exists:19.10@check:
@@ -200,10 +200,10 @@ ubuntu:19.10@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   stage: ubuntu_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
@@ -212,17 +212,17 @@ ubuntu:19.10@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 ubuntu:19.10-upstream@container-ifnot-exists:
   extends: .ubuntu:ci@container-ifnot-exists
   stage: ubuntu_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_VERSION: '19.10'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_VERSION: '19.10'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - ubuntu-forced:19.10@container-ifnot-exists
     - sanity check
@@ -234,8 +234,8 @@ ubuntu:19.10-upstream@container-ifnot-exists:
 ubuntu:18.04@container-build:
   extends: .ubuntu:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '18.04'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '18.04'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 ubuntu:18.04@check:
   extends: .ubuntu@check

@@ -5,68 +5,69 @@
 # This template will create a {{distribution}} image based on the following variables:
 #
 {% if not version %}
-#  - DISTRIBUTION_VERSION: the {{distribution}} version ({{version_examples}}, etc...)
+#  - FDO_DISTRIBUTION_VERSION:  the {{distribution}} version ({{version_examples}}, etc...)
 {% endif %}
-#  - DISTRIBUTION_PACKAGES:    if set, list of packages that needs to be installed
-#  - DISTRIBUTION_EXEC:    if set, this command will be run once the packages have
-#                    been installed
-#  - UPSTREAM_REPO:  the upstream project on this gitlab instance where we might
-#                    find the given tag (for example: `wayland/weston`)
-#  - REPO_SUFFIX:    The repository name suffix after ".../{{distribution}}/".
-#                    If this variable isn't defined, "$DISTRIBUTION_VERSION" is used for
-#                    the suffix.
-#  - DISTRIBUTION_TAG:     tag to copy the image from the upstream registry. If the
-#                    tag does not exist, create a new build and tag it
+#  - FDO_DISTRIBUTION_PACKAGES: if set, list of packages that needs to be installed
+#  - FDO_DISTRIBUTION_EXEC:     if set, this command will be run once the packages have
+#                               been installed
+#  - FDO_UPSTREAM_REPO:         the upstream project on this gitlab instance
+#                               where we might find the given tag (for example:
+#                               `wayland/weston`)
+#  - FDO_REPO_SUFFIX:           The repository name suffix after ".../{{distribution}}/".
+#                               If this variable isn't defined,
+#                               "$FDO_DISTRIBUTION_VERSION" is used for the suffix.
+#  - FDO_DISTRIBUTION_TAG:      tag to copy the image from the upstream registry. If the
+#                               tag does not exist, create a new build and tag it
 #
 # The resulting image will be pushed in the local registry, under:
-#     $CI_REGISTRY_IMAGE/{{distribution}}/$REPO_SUFFIX:$DISTRIBUTION_TAG
+#     $CI_REGISTRY_IMAGE/{{distribution}}/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
 #
 # Two flavors of templates are available:
-#   - `.{{distribution}}@container-build`: this will force rebuild a new container
-#     and tag it with $DISTRIBUTION_TAG without checks
-#   - `.{{distribution}}@container-ifnot-exists`: this will rebuild a new container
-#     only if $DISTRIBUTION_TAG is not available in the local registry or
-#     in the $UPSTREAM_REPO registry
+#   - `.fdo.{{distribution}}@container-build`: this will force rebuild a new container
+#     and tag it with $FDO_DISTRIBUTION_TAG without checks
+#   - `.fdo.{{distribution}}@container-ifnot-exists`: this will rebuild a new container
+#     only if $FDO_DISTRIBUTION_TAG is not available in the local registry or
+#     in the $FDO_UPSTREAM_REPO registry
 
 # we cannot reuse exported variables in after_script,
 # so let's have a common definition
-.{{distribution}}_vars: &distro_vars |
+.fdo.{{distribution}}_vars: &fdo_distro_vars |
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
         export DISTRO={{distribution}}
-        export DISTRO_TAG=$DISTRIBUTION_TAG
+        export DISTRO_TAG=$FDO_DISTRIBUTION_TAG
 {% if not version %}
-        export DISTRO_VERSION="$DISTRIBUTION_VERSION"
+        export DISTRO_VERSION="$FDO_DISTRIBUTION_VERSION"
 {% else %}
         export DISTRO_VERSION="{{version}}"
 {% endif %}
-        export DISTRO_EXEC=$DISTRIBUTION_EXEC
-        if [ x"$REPO_SUFFIX" == x"" ] ;
+        export DISTRO_EXEC=$FDO_DISTRIBUTION_EXEC
+        if [ x"$FDO_REPO_SUFFIX" == x"" ] ;
         then
-                export REPO_SUFFIX=$DISTRO_VERSION
+                export FDO_REPO_SUFFIX=$DISTRO_VERSION
         fi
         export BUILDAH_RUN="buildah run --isolation chroot"
         export BUILDAH_COMMIT="buildah commit --format docker"
 
 
-.{{distribution}}@container-build:
+.fdo.{{distribution}}@container-build:
   image: $CI_REGISTRY/wayland/ci-templates/buildah:{{ bootstrap_tag }}
   stage: build
   before_script:
     # log in to the registry
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-    - *distro_vars
+    - *fdo_distro_vars
 
   script:
-  - *distro_vars
+  - *fdo_distro_vars
   - if [[ x"$DISTRO_TAG" == x"" ]] ;
     then
       echo $DISTRO tag missing;
       exit 1;
     fi
-  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from {{ image }}
+  - echo Building $DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG from {{ image }}
     # initial set up: take the base image, update it and install the packages
   - buildcntr=$(buildah from {{ image }})
   - buildmnt=$(buildah mount $buildcntr)
@@ -81,10 +82,10 @@
   - $BUILDAH_RUN $buildcntr {{command}}
     {% endfor %}
 
-  - if [[ x"$DISTRIBUTION_PACKAGES" != x"" ]] ;
+  - if [[ x"$FDO_DISTRIBUTION_PACKAGES" != x"" ]] ;
     then
       {% for command in install %}
-      $BUILDAH_RUN $buildcntr {{command}} $DISTRIBUTION_PACKAGES ;
+      $BUILDAH_RUN $buildcntr {{command}} $FDO_DISTRIBUTION_PACKAGES ;
       {% endfor %}
     fi
 
@@ -117,7 +118,7 @@
     # umount the container, not required, but, heh
   - buildah unmount $buildcntr
     # tag the current container
-  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
     # clean up the working container
   - buildah rm $buildcntr
 
@@ -125,20 +126,20 @@
     # There is a bug when pushing 2 tags in the same repo with the same base:
     # this may fail. Just retry it after.
   - export JOB_TAG="${DISTRO_TAG}-built-by-job-${CI_JOB_ID}"
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-                $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$JOB_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
+                $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$JOB_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
-                $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$JOB_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
+                $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$JOB_TAG || true
 
     # Push the final tag
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
 {% if aarch64 %}
 
-.{{distribution}}@container-build@arm64v8:
-  extends: .{{distribution}}@container-build
+.fdo.{{distribution}}@container-build@arm64v8:
+  extends: .fdo.{{distribution}}@container-build
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:{{ bootstrap_tag }}
   tags:
     - aarch64
@@ -146,18 +147,18 @@
 
 {% if qemu %}
 
-.{{distribution}}@qemu-build:
-  extends: .{{distribution}}@container-build
+.fdo.{{distribution}}@qemu-build:
+  extends: .fdo.{{distribution}}@container-build
   tags:
     - kvm
   image: $CI_REGISTRY/wayland/ci-templates/fedora/qemu-mkosi-base:{{ qemu_tag }}
   script:
-  - *distro_vars
+  - *fdo_distro_vars
 
   # start our current base mkosi image
   - /bin/bash /app/start_vm.sh -cdrom /app/my-seed.iso
 
-  - QEMU_VERSION=$DISTRIBUTION_VERSION
+  - QEMU_VERSION=$FDO_DISTRIBUTION_VERSION
 {% if ubuntu_versions %}
 
   # for ubuntu, we need to use the name, not the number
@@ -166,9 +167,9 @@
     {% for key, value in ubuntu_versions.items() %}
     versions["{{key}}"]={{value.lower()}}
     {% endfor %}
-  - if [[ x"${versions[$DISTRIBUTION_VERSION]}" != x"" ]] ;
+  - if [[ x"${versions[$FDO_DISTRIBUTION_VERSION]}" != x"" ]] ;
     then
-      QEMU_VERSION=${versions["$DISTRIBUTION_VERSION"]} ;
+      QEMU_VERSION=${versions["$FDO_DISTRIBUTION_VERSION"]} ;
     fi
 {% endif %}
 
@@ -196,7 +197,7 @@
 {% endfor %}
     EOF
 
-  - echo $DISTRIBUTION_PACKAGES | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
+  - echo $FDO_DISTRIBUTION_PACKAGES | tr ' ' '\n' | sed -e 's/^/  /' >> mkosi.default
 
   # create a new ssh key
   - ssh-keygen -t rsa -f /root/.ssh/id_rsa_target -N ''
@@ -262,7 +263,7 @@
 
   - QEMU_BASE_IMAGE=${QEMU_BASE_IMAGE:-$CI_REGISTRY/wayland/ci-templates/fedora/qemu-base:{{ qemu_tag }}}
 
-  - echo Building $DISTRO/$REPO_SUFFIX:$DISTRO_TAG from $QEMU_BASE_IMAGE
+  - echo Building $DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG from $QEMU_BASE_IMAGE
 
   - buildcntr=$(buildah from $QEMU_BASE_IMAGE)
   - buildmnt=$(buildah mount $buildcntr)
@@ -306,7 +307,7 @@
   - buildah unmount $buildcntr
 
     # tag the current container
-  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+  - $BUILDAH_COMMIT $buildcntr $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
 
     # clean up the working container
   - buildah rm $buildcntr
@@ -314,59 +315,59 @@
     # push the container image to the registry
     # There is a bug when pushing 2 tags in the same repo with the same base:
     # this may fail. Just retry it after.
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG || true
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG || true
   - sleep 2
-  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+  - podman push $CI_REGISTRY_IMAGE/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
 {% endif %}
 
-.before_script_ifnot_exists: &before_script_ifnot_exists
+.fdo.before_script_ifnot_exists: &fdo_before_script_ifnot_exists
   before_script:
     # log in to the registry
     - podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-    - *distro_vars
+    - *fdo_distro_vars
 
     # to be able to test the following script in the CI of the ci-templates
     # project itself, we need to put a special case here to have a
     # different image to pull if it already exists
-    - export REPO_SUFFIX_LOCAL=$REPO_SUFFIX
+    - export REPO_SUFFIX_LOCAL=$FDO_REPO_SUFFIX
     - if [[ x"$REPO_SUFFIX_LOCAL" == x"ci_templates_test_upstream" ]] ;
       then
-        export REPO_SUFFIX=${DISTRO_VERSION} ;
+        export FDO_REPO_SUFFIX=${DISTRO_VERSION} ;
       fi
 
     # check if our image is already in the current registry
     - skopeo inspect docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG > /dev/null && exit 0 || true
     # check if our image is already in the upstream registry
-    - if [[ -z "$UPSTREAM_REPO" ]];
+    - if [[ -z "$FDO_UPSTREAM_REPO" ]];
       then
-        echo "WARNING! Variable \$UPSTREAM_REPO is undefined, cannot check for images" ;
+        echo "WARNING! Variable \$FDO_UPSTREAM_REPO is undefined, cannot check for images" ;
       else
-        skopeo inspect docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG > /dev/null && touch .upstream || true ;
+        skopeo inspect docker://$CI_REGISTRY/$FDO_UPSTREAM_REPO/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG > /dev/null && touch .upstream || true ;
       fi
     # copy the original image into the current project registry namespace
     # we do 2 attempts with skopeo copy at most
     - if [ -f .upstream ] ;
       then
         skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
-                    docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                    docker://$CI_REGISTRY/$FDO_UPSTREAM_REPO/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
                     docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG ||
         skopeo copy --dest-creds $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD
-                    docker://$CI_REGISTRY/$UPSTREAM_REPO/$DISTRO/$REPO_SUFFIX:$DISTRO_TAG
+                    docker://$CI_REGISTRY/$FDO_UPSTREAM_REPO/$DISTRO/$FDO_REPO_SUFFIX:$DISTRO_TAG
                     docker://$CI_REGISTRY_IMAGE/$DISTRO/$REPO_SUFFIX_LOCAL:$DISTRO_TAG ;
 
         exit 0 ;
       fi
 
 
-.{{distribution}}@container-ifnot-exists:
-  extends: .{{distribution}}@container-build
-  <<: *before_script_ifnot_exists
+.fdo.{{distribution}}@container-ifnot-exists:
+  extends: .fdo.{{distribution}}@container-build
+  <<: *fdo_before_script_ifnot_exists
 {% if aarch64 %}
 
 
-.{{distribution}}@container-ifnot-exists@arm64v8:
-  extends: .{{distribution}}@container-ifnot-exists
+.fdo.{{distribution}}@container-ifnot-exists@arm64v8:
+  extends: .fdo.{{distribution}}@container-ifnot-exists
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:{{ bootstrap_tag }}
   tags:
     - aarch64
@@ -374,8 +375,8 @@
 
 {%- if qemu %}
 
-.{{distribution}}@qemu-ifnot-exists:
-  extends: .{{distribution}}@qemu-build
-  <<: *before_script_ifnot_exists
+.fdo.{{distribution}}@qemu-ifnot-exists:
+  extends: .fdo.{{distribution}}@qemu-build
+  <<: *fdo_before_script_ifnot_exists
 
 {% endif -%}

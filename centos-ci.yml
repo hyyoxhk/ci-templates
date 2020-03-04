@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: './test/script.sh'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: './test/script.sh'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .centos:ci@container-build:
-  extends: .centos@container-build
+  extends: .fdo.centos@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .centos:ci@container-ifnot-exists:
-  extends: .centos@container-ifnot-exists
+  extends: .fdo.centos@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: centos_container_build
   needs:
@@ -48,7 +48,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -60,8 +60,8 @@ variables:
 centos:7@container-build:
   extends: .centos:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '7'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '7'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 centos:7@check:
@@ -78,9 +78,9 @@ centos:7@check:
 centos-forced:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '7'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '7'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 centos-forced-ifnot-exists:7@check:
@@ -98,10 +98,10 @@ centos:7@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   stage: centos_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: '7'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: '7'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
@@ -110,17 +110,17 @@ centos:7@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 centos:7-upstream@container-ifnot-exists:
   extends: .centos:ci@container-ifnot-exists
   stage: centos_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_VERSION: '7'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_VERSION: '7'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - centos-forced:7@container-ifnot-exists
     - sanity check
@@ -132,8 +132,8 @@ centos:7-upstream@container-ifnot-exists:
 centos:8@container-build:
   extends: .centos:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '8'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '8'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 centos:8@check:
   extends: .centos@check

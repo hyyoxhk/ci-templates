@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: '/bin/bash test/script.sh'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: '/bin/bash test/script.sh'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .arch:ci@container-build:
-  extends: .arch@container-build
+  extends: .fdo.arch@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .arch:ci@container-ifnot-exists:
-  extends: .arch@container-ifnot-exists
+  extends: .fdo.arch@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: arch_container_build
   needs:
@@ -39,7 +39,7 @@ variables:
 # Qemu build
 #
 .arch:ci@qemu-build:
-  extends: .arch@qemu-build
+  extends: .fdo.arch@qemu-build
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: arch_container_build
   artifacts:
@@ -65,7 +65,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -111,7 +111,7 @@ variables:
 arch:rolling@container-build:
   extends: .arch:ci@container-build
   variables:
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 arch:rolling@check:
@@ -125,8 +125,8 @@ arch:rolling@check:
 arch:rolling@qemu-build:
   extends: .arch:ci@qemu-build
   variables:
-    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
-    DISTRIBUTION_PACKAGES: 'wget curl'
+    FDO_DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -144,8 +144,8 @@ arch:rolling@qemu-check:
 arch-forced:rolling@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 arch-forced-ifnot-exists:rolling@check:
@@ -163,9 +163,9 @@ arch:rolling@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   stage: arch_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check
@@ -174,16 +174,16 @@ arch:rolling@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 arch:rolling-upstream@container-ifnot-exists:
   extends: .arch:ci@container-ifnot-exists
   stage: arch_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - arch-forced:rolling@container-ifnot-exists
     - sanity check

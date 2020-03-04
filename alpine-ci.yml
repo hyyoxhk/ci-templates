@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: '.hidden_dir/test.sh /test_file'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: '.hidden_dir/test.sh /test_file'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .alpine:ci@container-build:
-  extends: .alpine@container-build
+  extends: .fdo.alpine@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .alpine:ci@container-ifnot-exists:
-  extends: .alpine@container-ifnot-exists
+  extends: .fdo.alpine@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .alpine:ci@container-build@arm64v8:
-  extends: .alpine@container-build@arm64v8
+  extends: .fdo.alpine@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .alpine:ci@container-ifnot-exists@arm64v8:
-  extends: .alpine@container-ifnot-exists@arm64v8
+  extends: .fdo.alpine@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: alpine_container_build
   needs:
@@ -65,7 +65,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -77,7 +77,7 @@ variables:
 alpine:latest@container-build:
   extends: .alpine:ci@container-build
   variables:
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 alpine:latest@check:
@@ -91,7 +91,7 @@ alpine:latest@check:
 alpine:latest@container-build@arm64v8:
   extends: .alpine:ci@container-build@arm64v8
   variables:
-    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 alpine:latest@check@arm64v8:
@@ -110,8 +110,8 @@ alpine:latest@check@arm64v8:
 alpine-forced:latest@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 alpine-forced-ifnot-exists:latest@check:
@@ -129,9 +129,9 @@ alpine:latest@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   stage: alpine_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists
     - sanity check
@@ -140,16 +140,16 @@ alpine:latest@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 alpine:latest-upstream@container-ifnot-exists:
   extends: .alpine:ci@container-ifnot-exists
   stage: alpine_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - alpine-forced:latest@container-ifnot-exists
     - sanity check

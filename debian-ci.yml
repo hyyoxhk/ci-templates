@@ -3,8 +3,8 @@
 # THIS FILE IS GENERATED, DO NOT EDIT
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: 'sh test/script.sh'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: 'sh test/script.sh'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .debian:ci@container-build:
-  extends: .debian@container-build
+  extends: .fdo.debian@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .debian:ci@container-ifnot-exists:
-  extends: .debian@container-ifnot-exists
+  extends: .fdo.debian@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -36,7 +36,7 @@ variables:
 
 
 .debian:ci@container-build@arm64v8:
-  extends: .debian@container-build@arm64v8
+  extends: .fdo.debian@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -45,7 +45,7 @@ variables:
 
 
 .debian:ci@container-ifnot-exists@arm64v8:
-  extends: .debian@container-ifnot-exists@arm64v8
+  extends: .fdo.debian@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: debian_container_build
   needs:
@@ -56,7 +56,7 @@ variables:
 # Qemu build
 #
 .debian:ci@qemu-build:
-  extends: .debian@qemu-build
+  extends: .fdo.debian@qemu-build
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: debian_container_build
   artifacts:
@@ -82,7 +82,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -128,8 +128,8 @@ variables:
 debian:stretch@container-build:
   extends: .debian:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 debian:stretch@check:
@@ -143,8 +143,8 @@ debian:stretch@check:
 debian:stretch@container-build@arm64v8:
   extends: .debian:ci@container-build@arm64v8
   variables:
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 debian:stretch@check@arm64v8:
@@ -160,9 +160,9 @@ debian:stretch@check@arm64v8:
 debian:stretch@qemu-build:
   extends: .debian:ci@qemu-build
   variables:
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
-    DISTRIBUTION_PACKAGES: 'wget curl'
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -180,9 +180,9 @@ debian:stretch@qemu-check:
 debian-forced:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 debian-forced-ifnot-exists:stretch@check:
@@ -200,10 +200,10 @@ debian:stretch@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   stage: debian_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - debian-forced:stretch@container-ifnot-exists
     - sanity check
@@ -212,17 +212,17 @@ debian:stretch@container-ifnot-exists:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 debian:stretch-upstream@container-ifnot-exists:
   extends: .debian:ci@container-ifnot-exists
   stage: debian_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
-    DISTRIBUTION_VERSION: 'stretch'
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
+    FDO_DISTRIBUTION_VERSION: 'stretch'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - debian-forced:stretch@container-ifnot-exists
     - sanity check
@@ -234,8 +234,8 @@ debian:stretch-upstream@container-ifnot-exists:
 debian:sid@container-build:
   extends: .debian:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: 'sid'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: 'sid'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 debian:sid@check:
   extends: .debian@check
@@ -247,8 +247,8 @@ debian:sid@check:
 debian:buster@container-build:
   extends: .debian:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: 'buster'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: 'buster'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 debian:buster@check:
   extends: .debian@check

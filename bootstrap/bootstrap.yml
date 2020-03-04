@@ -167,16 +167,16 @@
 # - genisoimage (to create a cloud-init iso that will help us filling in the custom parameters)
 # - usbutils (for being able to call lsusb and redirect part a USB device)
 .qemu:
-  extends: .fedora@container-ifnot-exists
+  extends: .fdo.fedora@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: bootstrapping_qemu
   dependencies: []
   variables:
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $QEMU_TAG
-    REPO_SUFFIX: qemu-base
-    DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
-    DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh'
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $QEMU_TAG
+    FDO_REPO_SUFFIX: qemu-base
+    FDO_DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
+    FDO_DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh'
 
 # qemu container capable of creating an other VM image
 #
@@ -185,8 +185,8 @@
   tags:
     - kvm
   variables:
-    DISTRIBUTION_VERSION: '31'
-    DISTRIBUTION_TAG: $QEMU_TAG
-    REPO_SUFFIX: qemu-mkosi-base
-    DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
-    DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'
+    FDO_DISTRIBUTION_VERSION: '31'
+    FDO_DISTRIBUTION_TAG: $QEMU_TAG
+    FDO_REPO_SUFFIX: qemu-mkosi-base
+    FDO_DISTRIBUTION_PACKAGES: 'buildah-1.11.3-2.fc31 podman-2:1.6.2-2.fc31 skopeo jq git qemu genisoimage usbutils'
+    FDO_DISTRIBUTION_EXEC: 'bootstrap/prep_qemu.sh && bootstrap/prep_mkosi.sh'

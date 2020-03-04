@@ -84,11 +84,11 @@ A simple example (using debian) would be:
 
 ```yaml
 variables:
-  # DISTRIBUTION_TAG can be anything, what matters is that it is unique enough and
+  # FDO_DISTRIBUTION_TAG can be anything, what matters is that it is unique enough and
   #                  every change will rebuild a new image
-  DISTRIBUTION_TAG: 2019-03-29-01
-  DISTRIBUTION_VERSION: testing
-  TEST_IMAGE: "$CI_REGISTRY_IMAGE/debian/$DISTRIBUTION_VERSION:$DISTRIBUTION_TAG"
+  FDO_DISTRIBUTION_TAG: 2019-03-29-01
+  FDO_DISTRIBUTION_VERSION: testing
+  TEST_IMAGE: "$CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG"
 
 # this is where the magic happens
 # `ref` can be a git sha or a git ref (master)
@@ -108,7 +108,7 @@ container_build:
   variables:
     GIT_STRATEGY: none # no need to pull the whole tree for rebuilding the image
     # a list of packages to install
-    DISTRIBUTION_PACKAGES: 'curl'
+    FDO_DISTRIBUTION_PACKAGES: 'curl'
 
 # TEST stage (is curl working?)
 test_curl:

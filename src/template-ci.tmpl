@@ -3,8 +3,8 @@
 # {{ warning }}
 
 variables:
-  DISTRIBUTION_PACKAGES: 'wget curl'
-  DISTRIBUTION_EXEC: '{{ script }}'
+  FDO_DISTRIBUTION_PACKAGES: 'wget curl'
+  FDO_DISTRIBUTION_EXEC: '{{ script }}'
 
 
 ################################################################################
@@ -18,7 +18,7 @@ variables:
 # A few templates to avoid writing the image and stage in each job
 #
 .{{distribution}}:ci@container-build:
-  extends: .{{distribution}}@container-build
+  extends: .fdo.{{distribution}}@container-build
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
   needs:
@@ -27,7 +27,7 @@ variables:
 
 
 .{{distribution}}:ci@container-ifnot-exists:
-  extends: .{{distribution}}@container-ifnot-exists
+  extends: .fdo.{{distribution}}@container-ifnot-exists
   image: $CI_REGISTRY_IMAGE/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
   needs:
@@ -37,7 +37,7 @@ variables:
 {% if aarch64 %}
 
 .{{distribution}}:ci@container-build@arm64v8:
-  extends: .{{distribution}}@container-build@arm64v8
+  extends: .fdo.{{distribution}}@container-build@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
   needs:
@@ -46,7 +46,7 @@ variables:
 
 
 .{{distribution}}:ci@container-ifnot-exists@arm64v8:
-  extends: .{{distribution}}@container-ifnot-exists@arm64v8
+  extends: .fdo.{{distribution}}@container-ifnot-exists@arm64v8
   image: $CI_REGISTRY_IMAGE/arm64v8/buildah:$BOOTSTRAP_TAG
   stage: {{distribution}}_container_build
   needs:
@@ -59,7 +59,7 @@ variables:
 # Qemu build
 #
 .{{distribution}}:ci@qemu-build:
-  extends: .{{distribution}}@qemu-build
+  extends: .fdo.{{distribution}}@qemu-build
   image: $CI_REGISTRY_IMAGE/fedora/qemu-mkosi-base:$QEMU_TAG
   stage: {{distribution}}_container_build
   artifacts:
@@ -86,7 +86,7 @@ variables:
       # make sure our test script has been run
     - if [[ -e /test_file ]] ;
       then
-        echo $DISTRIBUTION_EXEC properly run ;
+        echo $FDO_DISTRIBUTION_EXEC properly run ;
       else
         exit 1 ;
       fi
@@ -137,9 +137,9 @@ variables:
   extends: .{{distribution}}:ci@container-build
   variables:
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 
 {{distribution}}:{{ versions[0] }}@check:
@@ -155,9 +155,9 @@ variables:
   extends: .{{distribution}}:ci@container-build@arm64v8
   variables:
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_TAG: arm64v8-$CI_PIPELINE_ID
 
 
 {{distribution}}:{{ versions[0] }}@check@arm64v8:
@@ -176,10 +176,10 @@ variables:
   extends: .{{distribution}}:ci@qemu-build
   variables:
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
-    DISTRIBUTION_PACKAGES: 'wget curl'
+    FDO_DISTRIBUTION_TAG: qemu-$CI_PIPELINE_ID
+    FDO_DISTRIBUTION_PACKAGES: 'wget curl'
     QEMU_BASE_IMAGE: $CI_REGISTRY_IMAGE/fedora/qemu-base:$QEMU_TAG
 
 
@@ -198,11 +198,11 @@ variables:
 {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists:
   extends: .{{distribution}}:ci@container-ifnot-exists
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
 
 
 {{distribution}}-forced-ifnot-exists:{{ versions[0] }}@check:
@@ -220,12 +220,12 @@ variables:
   extends: .{{distribution}}:ci@container-ifnot-exists
   stage: {{distribution}}_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
@@ -234,19 +234,19 @@ variables:
 #
 # make sure we do not rebuild the image if the tag exists in the upstream
 # repository (during the check)
-# special case where REPO_SUFFIX == ci_templates_test_upstream
+# special case where FDO_REPO_SUFFIX == ci_templates_test_upstream
 #
 {{distribution}}:{{ versions[0] }}-upstream@container-ifnot-exists:
   extends: .{{distribution}}:ci@container-ifnot-exists
   stage: {{distribution}}_check
   variables:
-    UPSTREAM_REPO: $CI_PROJECT_PATH
-    REPO_SUFFIX: ci_templates_test_upstream
+    FDO_UPSTREAM_REPO: $CI_PROJECT_PATH
+    FDO_REPO_SUFFIX: ci_templates_test_upstream
 {% if not version %}
-    DISTRIBUTION_VERSION: '{{ versions[0] }}'
+    FDO_DISTRIBUTION_VERSION: '{{ versions[0] }}'
 {% endif %}
-    DISTRIBUTION_TAG: $CI_PIPELINE_IID
-    DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_IID
+    FDO_DISTRIBUTION_PACKAGES: 'this-package-should-not-exist'
   needs:
     - {{distribution}}-forced:{{ versions[0] }}@container-ifnot-exists
     - sanity check
@@ -260,8 +260,8 @@ variables:
 {{distribution}}:{{v}}@container-build:
   extends: .{{distribution}}:ci@container-build
   variables:
-    DISTRIBUTION_VERSION: '{{v}}'
-    DISTRIBUTION_TAG: $CI_PIPELINE_ID
+    FDO_DISTRIBUTION_VERSION: '{{v}}'
+    FDO_DISTRIBUTION_TAG: $CI_PIPELINE_ID
 
 {{distribution}}:{{v}}@check:
   extends: .{{distribution}}@check
