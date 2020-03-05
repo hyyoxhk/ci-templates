@@ -34,7 +34,8 @@
         export BUILDAH_FORMAT=docker
         export DISTRO=arch
         export DISTRO_TAG=$FDO_DISTRIBUTION_TAG
-        export DISTRO_VERSION="rolling"
+        export FDO_DISTRIBUTION_VERSION="rolling"
+        export DISTRO_VERSION="$FDO_DISTRIBUTION_VERSION"
         export DISTRO_EXEC=$FDO_DISTRIBUTION_EXEC
         if [ x"$FDO_REPO_SUFFIX" == x"" ] ;
         then

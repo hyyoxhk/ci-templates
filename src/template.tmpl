@@ -37,11 +37,10 @@
         export BUILDAH_FORMAT=docker
         export DISTRO={{distribution}}
         export DISTRO_TAG=$FDO_DISTRIBUTION_TAG
-{% if not version %}
-        export DISTRO_VERSION="$FDO_DISTRIBUTION_VERSION"
-{% else %}
-        export DISTRO_VERSION="{{version}}"
+{% if version %}
+        export FDO_DISTRIBUTION_VERSION="{{version}}"
 {% endif %}
+        export DISTRO_VERSION="$FDO_DISTRIBUTION_VERSION"
         export DISTRO_EXEC=$FDO_DISTRIBUTION_EXEC
         if [ x"$FDO_REPO_SUFFIX" == x"" ] ;
         then
