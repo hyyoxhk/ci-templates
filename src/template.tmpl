@@ -10,6 +10,8 @@
 #  - FDO_DISTRIBUTION_PACKAGES: if set, list of packages that needs to be installed
 #  - FDO_DISTRIBUTION_EXEC:     if set, this command will be run once the packages have
 #                               been installed
+#  - FDO_DISTRIBUTION_NAME:     set by these templates to "{{distribution}}".
+#                               Consider this as read-only variable.
 #  - FDO_UPSTREAM_REPO:         the upstream project on this gitlab instance
 #                               where we might find the given tag (for example:
 #                               `wayland/weston`)
@@ -38,6 +40,8 @@
         # exporting templates variables
         # https://gitlab.com/gitlab-com/support-forum/issues/4349
         export BUILDAH_FORMAT=docker
+        {# intentionally hard-coded because FDO_DISTRIBUTION_NAME
+           is a read-only variable #}
         export DISTRO={{distribution}}
         export DISTRO_TAG=$FDO_DISTRIBUTION_TAG
 {% if version %}
@@ -53,8 +57,12 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
         export CACHE_DIR=${FDO_CACHE_DIR:-/cache}
 
+.fdo.{{distribution}}:
+  variables:
+    FDO_DISTRIBUTION_NAME: "{{distribution}}"
 
 .fdo.container-build@{{distribution}}:
+  extends: .fdo.{{distribution}}
   image: $CI_REGISTRY/wayland/ci-templates/buildah:{{ bootstrap_tag }}
   stage: build
   script:
@@ -393,7 +401,12 @@
 #
 # If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
 .fdo.distribution_image@{{distribution}}:
-  image: $FDO_DISTRIBUTION_IMAGE
+  extends: .fdo.{{distribution}}
+{% if version %}
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/{{version}}:$FDO_DISTRIBUTION_TAG
+{% else %}
+  image: $CI_REGISTRY_IMAGE/{{distribution}}/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
+{% endif %}
   variables:
 {% if version %}
     FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/{{distribution}}/{{version}}:$FDO_DISTRIBUTION_TAG

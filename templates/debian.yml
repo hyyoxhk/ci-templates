@@ -8,6 +8,8 @@
 #  - FDO_DISTRIBUTION_PACKAGES: if set, list of packages that needs to be installed
 #  - FDO_DISTRIBUTION_EXEC:     if set, this command will be run once the packages have
 #                               been installed
+#  - FDO_DISTRIBUTION_NAME:     set by these templates to "debian".
+#                               Consider this as read-only variable.
 #  - FDO_UPSTREAM_REPO:         the upstream project on this gitlab instance
 #                               where we might find the given tag (for example:
 #                               `wayland/weston`)
@@ -48,8 +50,12 @@
         export BUILDAH_COMMIT="buildah commit --format docker"
         export CACHE_DIR=${FDO_CACHE_DIR:-/cache}
 
+.fdo.debian:
+  variables:
+    FDO_DISTRIBUTION_NAME: "debian"
 
 .fdo.container-build@debian:
+  extends: .fdo.debian
   image: $CI_REGISTRY/wayland/ci-templates/buildah:2020-03-04
   stage: build
   script:
@@ -360,6 +366,7 @@
 #
 # If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
 .fdo.distribution_image@debian:
-  image: $FDO_DISTRIBUTION_IMAGE
+  extends: .fdo.debian
+  image: $CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
   variables:
     FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
