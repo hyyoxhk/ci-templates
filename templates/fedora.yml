@@ -345,3 +345,12 @@
   extends: .fdo.qemu-build@fedora
   <<: *fdo_before_script_ifnot_exists
 
+
+# fedora template that pulls the fedora image from the
+# registry based on FDO_DISTRIBUTION_VERSION and FDO_DISTRIBUTION_TAG.
+#
+# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+.fdo.distribution_image@fedora:
+  image: $FDO_DISTRIBUTION_IMAGE
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/fedora/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG

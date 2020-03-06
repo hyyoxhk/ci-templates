@@ -183,3 +183,12 @@
   image: $CI_REGISTRY/wayland/ci-templates/arm64v8/buildah:2020-03-04
   tags:
     - aarch64
+
+# alpine template that pulls the alpine image from the
+# registry based on FDO_DISTRIBUTION_TAG.
+#
+# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+.fdo.distribution_image@alpine:
+  image: $FDO_DISTRIBUTION_IMAGE
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/alpine/latest:$FDO_DISTRIBUTION_TAG

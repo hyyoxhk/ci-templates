@@ -333,3 +333,12 @@
   extends: .fdo.qemu-build@arch
   <<: *fdo_before_script_ifnot_exists
 
+
+# arch template that pulls the arch image from the
+# registry based on FDO_DISTRIBUTION_TAG.
+#
+# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+.fdo.distribution_image@arch:
+  image: $FDO_DISTRIBUTION_IMAGE
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/arch/rolling:$FDO_DISTRIBUTION_TAG

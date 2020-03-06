@@ -386,4 +386,17 @@
   extends: .fdo.qemu-build@{{distribution}}
   <<: *fdo_before_script_ifnot_exists
 
-{% endif -%}
+{% endif %}
+
+# {{distribution}} template that pulls the {{distribution}} image from the
+# registry based on {% if not version %}FDO_DISTRIBUTION_VERSION and {% endif -%} FDO_DISTRIBUTION_TAG.
+#
+# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+.fdo.distribution_image@{{distribution}}:
+  image: $FDO_DISTRIBUTION_IMAGE
+  variables:
+{% if version %}
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/{{distribution}}/{{version}}:$FDO_DISTRIBUTION_TAG
+{% else %}
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/{{distribution}}/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
+{% endif %}

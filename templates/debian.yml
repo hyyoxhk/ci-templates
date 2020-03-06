@@ -354,3 +354,12 @@
   extends: .fdo.qemu-build@debian
   <<: *fdo_before_script_ifnot_exists
 
+
+# debian template that pulls the debian image from the
+# registry based on FDO_DISTRIBUTION_VERSION and FDO_DISTRIBUTION_TAG.
+#
+# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+.fdo.distribution_image@debian:
+  image: $FDO_DISTRIBUTION_IMAGE
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
