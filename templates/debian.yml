@@ -364,9 +364,17 @@
 # debian template that pulls the debian image from the
 # registry based on FDO_DISTRIBUTION_VERSION and FDO_DISTRIBUTION_TAG.
 #
-# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+# If you used FDO_REPO_SUFFIX during the container-build stage, use .fdo.suffixed_image@debian instead
 .fdo.distribution_image@debian:
   extends: .fdo.debian
   image: $CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
   variables:
     FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/debian/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
+
+# debian template that pulls the debian image from the
+# registry based on $FDO_REPO_SUFFIX.
+.fdo.suffixed_image@debian:
+  extends: .fdo.debian
+  image: $CI_REGISTRY_IMAGE/debian/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/debian/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG

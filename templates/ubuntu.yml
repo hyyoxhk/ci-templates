@@ -408,9 +408,17 @@
 # ubuntu template that pulls the ubuntu image from the
 # registry based on FDO_DISTRIBUTION_VERSION and FDO_DISTRIBUTION_TAG.
 #
-# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+# If you used FDO_REPO_SUFFIX during the container-build stage, use .fdo.suffixed_image@ubuntu instead
 .fdo.distribution_image@ubuntu:
   extends: .fdo.ubuntu
   image: $CI_REGISTRY_IMAGE/ubuntu/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
   variables:
     FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/ubuntu/$FDO_DISTRIBUTION_VERSION:$FDO_DISTRIBUTION_TAG
+
+# ubuntu template that pulls the ubuntu image from the
+# registry based on $FDO_REPO_SUFFIX.
+.fdo.suffixed_image@ubuntu:
+  extends: .fdo.ubuntu
+  image: $CI_REGISTRY_IMAGE/ubuntu/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/ubuntu/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG

@@ -193,9 +193,17 @@
 # alpine template that pulls the alpine image from the
 # registry based on FDO_DISTRIBUTION_TAG.
 #
-# If you used FDO_REPO_SUFFIX during the container-build stage, this template will not work.
+# If you used FDO_REPO_SUFFIX during the container-build stage, use .fdo.suffixed_image@alpine instead
 .fdo.distribution_image@alpine:
   extends: .fdo.alpine
   image: $CI_REGISTRY_IMAGE/alpine/latest:$FDO_DISTRIBUTION_TAG
   variables:
     FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/alpine/latest:$FDO_DISTRIBUTION_TAG
+
+# alpine template that pulls the alpine image from the
+# registry based on $FDO_REPO_SUFFIX.
+.fdo.suffixed_image@alpine:
+  extends: .fdo.alpine
+  image: $CI_REGISTRY_IMAGE/alpine/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
+  variables:
+    FDO_DISTRIBUTION_IMAGE: $CI_REGISTRY_IMAGE/alpine/$FDO_REPO_SUFFIX:$FDO_DISTRIBUTION_TAG
